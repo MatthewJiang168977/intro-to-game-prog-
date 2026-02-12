@@ -60,6 +60,8 @@ float gOrbitLocation = 0.0f;
 float gRotation = 0.0f;
 Vector2 gScale2 = {200.0f , 200.0f}; 
 Vector2 gScale3 = {400.0f , 400.0f};
+float gBackgroundTime = 0.0f;  
+int gColorIndex = 0;
 
 // Function Declarations
 Color ColorFromHex(const char *hex);
@@ -148,6 +150,16 @@ void update()
     if (gPosition3.x > SCREEN_WIDTH) gPosition3.x = 0;
     if (gPosition3.y > SCREEN_HEIGHT) gPosition3.y = 0;
 
+    //background
+    gBackgroundTime += deltaTime;
+    if (gBackgroundTime > 2.0f) { 
+        gColorIndex++;
+        gBackgroundTime = 0.0f; 
+
+        if (gColorIndex > 3) { 
+            gColorIndex = 0; 
+        } 
+    }
 }
     
 
@@ -156,8 +168,25 @@ void render()
 {
     BeginDrawing();
 
-    ClearBackground(RAYWHITE);
+    Color background; 
 
+    if (gColorIndex == 0) { 
+        background = ColorFromHex("#CF6757");
+    }
+    else if (gColorIndex == 1) { 
+        background = ColorFromHex("#1C355C");
+    }
+
+    else if (gColorIndex == 2) { 
+        background = ColorFromHex("#521C5C");
+    }
+
+    else { 
+        background = ColorFromHex("#1C5C26");
+    }
+
+    ClearBackground(background);
+    
     Rectangle textureArea = { 
         //top left corner 
         0.0f, 
