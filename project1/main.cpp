@@ -147,8 +147,8 @@ void update()
     gScale3.x = 300.0f + pulse;
     gScale3.y = 300.0f + pulse;
 
-    if (gPosition3.x > SCREEN_WIDTH) gPosition3.x = 0;
-    if (gPosition3.y > SCREEN_HEIGHT) gPosition3.y = 0;
+    if (gPosition3.x > SCREEN_WIDTH) gPosition3.x = 0.0f;
+    if (gPosition3.y > SCREEN_HEIGHT) gPosition3.y = 0.0f;
 
     //background
     gBackgroundTime += deltaTime;
@@ -186,7 +186,7 @@ void render()
     }
 
     ClearBackground(background);
-    
+
     Rectangle textureArea = { 
         //top left corner 
         0.0f, 
