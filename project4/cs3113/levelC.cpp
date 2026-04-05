@@ -12,8 +12,10 @@ void LevelC::initialise()
     // AUDIO 
     mGameState.bgm       = LoadMusicStream("assets/bgm.ogg");
     mGameState.jumpSound = LoadSound("assets/jump.ogg");
-    mGameState.hitSound   = LoadSound("assets/hit.wav");
+    mGameState.hitSound  = LoadSound("assets/hit.wav");
     mGameState.deathSound = LoadSound("assets/death.wav");
+    if (!IsSoundReady(mGameState.deathSound))
+        mGameState.deathSound = LoadSound("assets/hit.wav"); // fallback template
 
     SetMusicVolume(mGameState.bgm, 0.33f);
     PlayMusicStream(mGameState.bgm);
