@@ -72,7 +72,7 @@ void LevelB::initialise()
     mGameState.enemies[0].setAIState(IDLE);
     mGameState.enemies[0].setScale({TILE_DIMENSION * 1.4f, TILE_DIMENSION * 1.4f});
     mGameState.enemies[0].setColliderDimensions({TILE_DIMENSION, TILE_DIMENSION});
-    mGameState.enemies[0].setPosition({mOrigin.x - 200.0f, mOrigin.y - 150.0f});
+    mGameState.enemies[0].setPosition({mOrigin.x + 250.0f, mOrigin.y - 150.0f});
     mGameState.enemies[0].setAcceleration({0.0f, ACCELERATION_OF_GRAVITY});
     mGameState.enemies[0].setSpeed(80);
 
@@ -88,7 +88,7 @@ void LevelB::initialise()
     mGameState.enemies[1].setAIState(IDLE);
     mGameState.enemies[1].setScale({TILE_DIMENSION * 1.4f, TILE_DIMENSION * 1.4f});
     mGameState.enemies[1].setColliderDimensions({TILE_DIMENSION, TILE_DIMENSION});
-    mGameState.enemies[1].setPosition({mOrigin.x - 340.0f, mOrigin.y - 150.0f});
+    mGameState.enemies[1].setPosition({mOrigin.x + 700.0f, mOrigin.y - 150.0f});
     mGameState.enemies[1].setAcceleration({0.0f, ACCELERATION_OF_GRAVITY});
     mGameState.enemies[1].setSpeed(120);
 }
