@@ -68,7 +68,7 @@ void LevelB::initialise()
     mGameState.enemies[0].setAnimationAtlas(catAnimationAtlas);
     mGameState.enemies[0].setDirection(LEFT);
     mGameState.enemies[0].setFrameSpeed(14);
-    mGameState.enemies[0].setAIType(FOLLOWER);
+    mGameState.enemies[0].setAIType(WANDERER);
     mGameState.enemies[0].setAIState(IDLE);
     mGameState.enemies[0].setScale({TILE_DIMENSION * 1.4f, TILE_DIMENSION * 1.4f});
     mGameState.enemies[0].setColliderDimensions({TILE_DIMENSION, TILE_DIMENSION});
