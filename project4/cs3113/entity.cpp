@@ -4,7 +4,7 @@ Entity::Entity() : mPosition {0.0f, 0.0f}, mMovement {0.0f, 0.0f},
                    mVelocity {0.0f, 0.0f}, mAcceleration {0.0f, 0.0f},
                    mScale {DEFAULT_SIZE, DEFAULT_SIZE},
                    mColliderDimensions {DEFAULT_SIZE, DEFAULT_SIZE}, 
-                   mTexture {NULL}, mTextureType {SINGLE}, mAngle {0.0f},
+                   mTexture {}, mTextureType {SINGLE}, mAngle {0.0f},
                    mSpriteSheetDimensions {}, mDirection {RIGHT}, 
                    mAnimationAtlas {{}}, mAnimationIndices {}, mFrameSpeed {0},
                    mEntityType {NONE} { }
@@ -195,9 +195,9 @@ void Entity::animate(float deltaTime)
     }
 }
 
-void Entity::AIWander() { moveLeft(); }
+void Entity::AIWander(Map *map) { moveLeft(); }
 
-void Entity::AIFollow(Entity *target)
+void Entity::AIFollow(Entity *target, Map *map)
 {
     switch (mAIState)
     {
@@ -223,7 +223,8 @@ void Entity::AIFly(float deltaTime)
     mPosition.y = mFlyerOriginY + sinf(mFlyerTimer * mFlyerFrequency) * mFlyerAmplitude;
 }
 
-void Entity::AIActivate(Entity *target, float deltaTime)
+void Entity::AIActivate(Entity *target, float deltaTime, Map *map)
+
 {
     switch (mAIType)
     {
@@ -249,7 +250,7 @@ void Entity::update(float deltaTime, Entity *player, Map *map,
 {
     if (mEntityStatus == INACTIVE) return;
     
-    if (mEntityType == NPC) AIActivate(player, deltaTime);
+    if (mEntityType == NPC) AIActivate(player, deltaTime, map);
 
     resetColliderFlags();
 
