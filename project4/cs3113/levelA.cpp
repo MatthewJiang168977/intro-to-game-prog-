@@ -59,7 +59,7 @@ void LevelA::initialise()
     mGameState.enemies    = new Entity[LEVELA_ENEMY_COUNT];
 
     // Enemy 0: Wanderer (Corgi) 
-    mGameState.enemies[0].setTexture("assets/Corgi.png");
+    mGameState.enemies[0].setTexture("assets/corgi.webp");
     mGameState.enemies[0].setEntityType(NPC);
     mGameState.enemies[0].setTextureType(ATLAS);
     mGameState.enemies[0].setSpriteSheetDimensions({3, 8});
