@@ -38,7 +38,7 @@ void LevelA::initialise()
     float sizeRatio = 32.0f / 32.0f;
 
     mGameState.player = new Entity(
-        {mOrigin.x - 500.0f, mOrigin.y - 200.0f},
+        {mOrigin.x - 1000.0f, mOrigin.y - 200.0f},
         {150.0f * sizeRatio, 150.0f},
         "assets/Cat_Sprite_Sheet.png",
         ATLAS,
@@ -59,7 +59,7 @@ void LevelA::initialise()
     mGameState.enemies    = new Entity[LEVELA_ENEMY_COUNT];
 
     // Enemy 0: Wanderer (Corgi) 
-    mGameState.enemies[0].setTexture("assets/corgi.webp");
+    mGameState.enemies[0].setTexture("assets/Corgi.png");
     mGameState.enemies[0].setEntityType(NPC);
     mGameState.enemies[0].setTextureType(ATLAS);
     mGameState.enemies[0].setSpriteSheetDimensions({3, 8});
@@ -113,7 +113,7 @@ void LevelA::update(float deltaTime)
         }
         else
         {
-            mGameState.player->setPosition({mOrigin.x - 500.0f, mOrigin.y - 200.0f});
+            mGameState.player->setPosition({mOrigin.x - 1000.0f, mOrigin.y - 200.0f});
         }
     }
 
@@ -125,7 +125,7 @@ void LevelA::update(float deltaTime)
         if (*mGameState.lives <= 0)
             mGameState.nextSceneID = 5;
         else
-            mGameState.player->setPosition({mOrigin.x - 500.0f, mOrigin.y - 200.0f});
+            mGameState.player->setPosition({mOrigin.x - 1000.0f, mOrigin.y - 200.0f});
     }
 
     // LEVEL CLEAR

@@ -9,7 +9,9 @@ void LevelB::initialise()
 {
     mGameState.nextSceneID = -1;
 
-    // AUDIO 
+    /*
+        ----------- AUDIO -----------
+    */
     mGameState.bgm       = LoadMusicStream("assets/bgm.ogg");
     mGameState.jumpSound = LoadSound("assets/jump.ogg");
     mGameState.hitSound  = LoadSound("assets/hit.wav");
@@ -66,7 +68,7 @@ void LevelB::initialise()
     };
 
     // Enemy 0: Wanderer
-    mGameState.enemies[0].setTexture("assets/corgi.webp");
+    mGameState.enemies[0].setTexture("assets/Corgi.png");
     mGameState.enemies[0].setEntityType(NPC);
     mGameState.enemies[0].setTextureType(ATLAS);
     mGameState.enemies[0].setSpriteSheetDimensions({3, 8});
@@ -82,7 +84,7 @@ void LevelB::initialise()
     mGameState.enemies[0].setSpeed(80);
 
     // Enemy 1: Follower 
-    mGameState.enemies[1].setTexture("assets/corgi.webp");
+    mGameState.enemies[1].setTexture("assets/Corgi.png");
     mGameState.enemies[1].setEntityType(NPC);
     mGameState.enemies[1].setTextureType(ATLAS);
     mGameState.enemies[1].setSpriteSheetDimensions({3, 8});

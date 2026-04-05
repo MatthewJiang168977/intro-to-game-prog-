@@ -66,7 +66,7 @@ void LevelC::initialise()
     };
 
     // Enemy 0: Wanderer
-    mGameState.enemies[0].setTexture("assets/corgi.webp");
+    mGameState.enemies[0].setTexture("assets/corgi.png");
     mGameState.enemies[0].setEntityType(NPC);
     mGameState.enemies[0].setTextureType(ATLAS);
     mGameState.enemies[0].setSpriteSheetDimensions({3, 8});
@@ -82,7 +82,7 @@ void LevelC::initialise()
     mGameState.enemies[0].setSpeed(100);
 
     // Enemy 1: Follower
-    mGameState.enemies[1].setTexture("assets/corgi.webp");
+    mGameState.enemies[1].setTexture("assets/corgi.png");
     mGameState.enemies[1].setEntityType(NPC);
     mGameState.enemies[1].setTextureType(ATLAS);
     mGameState.enemies[1].setSpriteSheetDimensions({3, 8});
@@ -100,7 +100,7 @@ void LevelC::initialise()
     // Enemy 2: Flyer 
     float flyerY = mOrigin.y - 250.0f;
 
-    mGameState.enemies[2].setTexture("assets/corgi.webp");
+    mGameState.enemies[2].setTexture("assets/corgi.png");
     mGameState.enemies[2].setEntityType(NPC);
     mGameState.enemies[2].setTextureType(ATLAS);
     mGameState.enemies[2].setSpriteSheetDimensions({3, 8});
