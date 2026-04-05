@@ -38,7 +38,7 @@ void LevelA::initialise()
     float sizeRatio = 32.0f / 32.0f;
 
     mGameState.player = new Entity(
-        {mOrigin.x - 1000.0f, mOrigin.y - 200.0f},
+        {mOrigin.x - 500.0f, mOrigin.y - 200.0f},
         {150.0f * sizeRatio, 150.0f},
         "assets/Cat_Sprite_Sheet.png",
         ATLAS,
@@ -47,7 +47,7 @@ void LevelA::initialise()
         PLAYER
     );
 
-    mGameState.player->setJumpingPower(700.0f);
+    mGameState.player->setJumpingPower(550.0f);
     mGameState.player->setColliderDimensions({
         mGameState.player->getScale().x / 2.0f,
         mGameState.player->getScale().y / 1.5f
@@ -59,18 +59,23 @@ void LevelA::initialise()
     mGameState.enemies    = new Entity[LEVELA_ENEMY_COUNT];
 
     // Enemy 0: Wanderer (Corgi) 
-    mGameState.enemies[0].setTexture("assets/Cat_Sprite_Sheet.png");
+    mGameState.enemies[0].setTexture("assets/Corgi.png");
     mGameState.enemies[0].setEntityType(NPC);
     mGameState.enemies[0].setTextureType(ATLAS);
-    mGameState.enemies[0].setSpriteSheetDimensions(ATLAS_DIMENSIONS);
-    mGameState.enemies[0].setAnimationAtlas(catAnimationAtlas);
+    mGameState.enemies[0].setSpriteSheetDimensions({3, 8});
+    mGameState.enemies[0].setAnimationAtlas({
+        {DOWN,  { 16, 17, 18, 19, 20, 21     }},
+        {LEFT,  {  8,  9, 10, 11, 12, 13, 14, 15 }},
+        {UP,    { 16, 17, 18, 19, 20, 21     }},
+        {RIGHT, {  0,  1,  2,  3,  4,  5,  6,  7 }},
+    });
     mGameState.enemies[0].setDirection(LEFT);
     mGameState.enemies[0].setFrameSpeed(14);
-    mGameState.enemies[0].setAIType(FOLLOWER);
-    mGameState.enemies[0].setAIState(IDLE);
-    mGameState.enemies[0].setScale({TILE_DIMENSION * 1.4f, TILE_DIMENSION * 1.4f});
+    mGameState.enemies[0].setAIType(WANDERER);
+    mGameState.enemies[0].setAIState(WALKING);
+    mGameState.enemies[0].setScale({TILE_DIMENSION, TILE_DIMENSION});
     mGameState.enemies[0].setColliderDimensions({TILE_DIMENSION, TILE_DIMENSION});
-    mGameState.enemies[0].setPosition({mOrigin.x - 40.0f, mOrigin.y - 150.0f});
+    mGameState.enemies[0].setPosition({mOrigin.x + 100.0f, mOrigin.y - 150.0f});
     mGameState.enemies[0].setAcceleration({0.0f, ACCELERATION_OF_GRAVITY});
     mGameState.enemies[0].setSpeed(80);
 }
@@ -108,7 +113,7 @@ void LevelA::update(float deltaTime)
         }
         else
         {
-            mGameState.player->setPosition({mOrigin.x - 1000.0f, mOrigin.y - 200.0f});
+            mGameState.player->setPosition({mOrigin.x - 500.0f, mOrigin.y - 200.0f});
         }
     }
 
@@ -120,7 +125,7 @@ void LevelA::update(float deltaTime)
         if (*mGameState.lives <= 0)
             mGameState.nextSceneID = 5;
         else
-            mGameState.player->setPosition({mOrigin.x - 1000.0f, mOrigin.y - 200.0f});
+            mGameState.player->setPosition({mOrigin.x - 500.0f, mOrigin.y - 200.0f});
     }
 
     // LEVEL CLEAR
