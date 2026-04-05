@@ -13,6 +13,9 @@ void LevelC::initialise()
     mGameState.bgm       = LoadMusicStream("assets/bgm.ogg");
     mGameState.jumpSound = LoadSound("assets/jump.ogg");
     mGameState.hitSound  = LoadSound("assets/hit.wav");
+    mGameState.deathSound = LoadSound("assets/death.wav");
+    if (!IsSoundReady(mGameState.deathSound))
+        mGameState.deathSound = LoadSound("assets/hit.wav"); // fallback template
 
     SetMusicVolume(mGameState.bgm, 0.33f);
     PlayMusicStream(mGameState.bgm);
@@ -137,6 +140,7 @@ void LevelC::update(float deltaTime)
     {
         (*mGameState.lives)--;
         PlaySound(mGameState.hitSound);
+        PlaySound(mGameState.deathSound);
 
         if (*mGameState.lives <= 0)
             mGameState.nextSceneID = 5;
@@ -148,6 +152,7 @@ void LevelC::update(float deltaTime)
     if (mGameState.player->getPosition().y > END_GAME_THRESHOLD)
     {
         (*mGameState.lives)--;
+        PlaySound(mGameState.deathSound);
 
         if (*mGameState.lives <= 0)
             mGameState.nextSceneID = 5;
@@ -185,4 +190,5 @@ void LevelC::shutdown()
     UnloadMusicStream(mGameState.bgm);
     UnloadSound(mGameState.jumpSound);
     UnloadSound(mGameState.hitSound);
+    UnloadSound(mGameState.deathSound);
 }
