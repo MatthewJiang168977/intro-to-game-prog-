@@ -66,11 +66,11 @@ void LevelC::initialise()
     mGameState.enemies[0].setAnimationAtlas(catAnimationAtlas);
     mGameState.enemies[0].setDirection(LEFT);
     mGameState.enemies[0].setFrameSpeed(14);
-    mGameState.enemies[0].setAIType(WANDERER);
-    mGameState.enemies[0].setAIState(WALKING);
-    mGameState.enemies[0].setScale({TILE_DIMENSION, TILE_DIMENSION});
+    mGameState.enemies[0].setAIType(FOLLOWER);
+    mGameState.enemies[0].setAIState(IDLE);
+    mGameState.enemies[0].setScale({TILE_DIMENSION * 1.4f, TILE_DIMENSION * 1.4f});
     mGameState.enemies[0].setColliderDimensions({TILE_DIMENSION, TILE_DIMENSION});
-    mGameState.enemies[0].setPosition({mOrigin.x - 200.0f, mOrigin.y - 150.0f});
+    mGameState.enemies[0].setPosition({mOrigin.x - 1010.0f, mOrigin.y - 150.0f});
     mGameState.enemies[0].setAcceleration({0.0f, ACCELERATION_OF_GRAVITY});
     mGameState.enemies[0].setSpeed(100);
 
@@ -84,9 +84,9 @@ void LevelC::initialise()
     mGameState.enemies[1].setFrameSpeed(14);
     mGameState.enemies[1].setAIType(FOLLOWER);
     mGameState.enemies[1].setAIState(IDLE);
-    mGameState.enemies[1].setScale({TILE_DIMENSION, TILE_DIMENSION});
+    mGameState.enemies[1].setScale({TILE_DIMENSION * 1.4f, TILE_DIMENSION * 1.4f});
     mGameState.enemies[1].setColliderDimensions({TILE_DIMENSION, TILE_DIMENSION});
-    mGameState.enemies[1].setPosition({mOrigin.x + 200.0f, mOrigin.y - 150.0f});
+    mGameState.enemies[1].setPosition({mOrigin.x - 930.0f, mOrigin.y - 150.0f});
     mGameState.enemies[1].setAcceleration({0.0f, ACCELERATION_OF_GRAVITY});
     mGameState.enemies[1].setSpeed(140);
 
@@ -102,7 +102,7 @@ void LevelC::initialise()
     mGameState.enemies[2].setFrameSpeed(14);
     mGameState.enemies[2].setAIType(FLYER);
     mGameState.enemies[2].setAIState(WALKING);
-    mGameState.enemies[2].setScale({TILE_DIMENSION, TILE_DIMENSION});
+    mGameState.enemies[2].setScale({TILE_DIMENSION * 1.4f, TILE_DIMENSION * 1.4f});
     mGameState.enemies[2].setColliderDimensions({TILE_DIMENSION, TILE_DIMENSION});
     mGameState.enemies[2].setPosition({mOrigin.x + 500.0f, flyerY});
     mGameState.enemies[2].setFlyerOriginY(flyerY);

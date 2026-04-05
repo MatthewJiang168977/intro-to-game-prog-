@@ -214,9 +214,40 @@ void Entity::animate(float deltaTime)
     }
 }
 
-void Entity::AIWander() { moveLeft(); }
+bool Entity::hasGroundAhead(Map *map) const
+{
+    if (map == nullptr || mAIType == FLYER) return true;
 
-void Entity::AIFollow(Entity *target)
+    float direction = 0.0f;
+
+    if      (mMovement.x < 0.0f || mDirection == LEFT)  direction = -1.0f;
+    else if (mMovement.x > 0.0f || mDirection == RIGHT) direction =  1.0f;
+    else return true;
+
+    Vector2 floorProbe = {
+        mPosition.x + direction * (mColliderDimensions.x / 2.0f + 4.0f),
+        mPosition.y + mColliderDimensions.y / 2.0f + 4.0f
+    };
+
+    float xOverlap = 0.0f, yOverlap = 0.0f;
+    return map->isSolidTileAt(floorProbe, &xOverlap, &yOverlap);
+}
+
+void Entity::AIWander(Map *map)
+{
+    if (mDirection != LEFT && mDirection != RIGHT) mDirection = LEFT;
+
+    if (mDirection == LEFT) moveLeft();
+    else                    moveRight();
+
+    if (!hasGroundAhead(map))
+    {
+        if (mDirection == LEFT) moveRight();
+        else                    moveLeft();
+    }
+}
+
+void Entity::AIFollow(Entity *target, Map *map)
 {
     switch (mAIState)
     {
@@ -228,6 +259,12 @@ void Entity::AIFollow(Entity *target)
     case WALKING:
         if (mPosition.x > target->getPosition().x) moveLeft();
         else                                       moveRight();
+
+        if (!hasGroundAhead(map))
+        {
+            if (mDirection == LEFT) moveRight();
+            else                    moveLeft();
+        }
     
     default:
         break;
@@ -242,16 +279,16 @@ void Entity::AIFly(float deltaTime)
     mPosition.y = mFlyerOriginY + sinf(mFlyerTimer * mFlyerFrequency) * mFlyerAmplitude;
 }
 
-void Entity::AIActivate(Entity *target, float deltaTime)
+void Entity::AIActivate(Entity *target, float deltaTime, Map *map)
 {
     switch (mAIType)
     {
     case WANDERER:
-        AIWander();
+        AIWander(map);
         break;
 
     case FOLLOWER:
-        AIFollow(target);
+        AIFollow(target, map);
         break;
 
     case FLYER:
@@ -268,7 +305,7 @@ void Entity::update(float deltaTime, Entity *player, Map *map,
 {
     if (mEntityStatus == INACTIVE) return;
     
-    if (mEntityType == NPC) AIActivate(player, deltaTime);
+    if (mEntityType == NPC) AIActivate(player, deltaTime, map);
 
     resetColliderFlags();
 

@@ -66,11 +66,11 @@ void LevelA::initialise()
     mGameState.enemies[0].setAnimationAtlas(catAnimationAtlas);
     mGameState.enemies[0].setDirection(LEFT);
     mGameState.enemies[0].setFrameSpeed(14);
-    mGameState.enemies[0].setAIType(WANDERER);
-    mGameState.enemies[0].setAIState(WALKING);
-    mGameState.enemies[0].setScale({TILE_DIMENSION, TILE_DIMENSION});
+    mGameState.enemies[0].setAIType(FOLLOWER);
+    mGameState.enemies[0].setAIState(IDLE);
+    mGameState.enemies[0].setScale({TILE_DIMENSION * 1.4f, TILE_DIMENSION * 1.4f});
     mGameState.enemies[0].setColliderDimensions({TILE_DIMENSION, TILE_DIMENSION});
-    mGameState.enemies[0].setPosition({mOrigin.x + 100.0f, mOrigin.y - 150.0f});
+    mGameState.enemies[0].setPosition({mOrigin.x - 900.0f, mOrigin.y - 150.0f});
     mGameState.enemies[0].setAcceleration({0.0f, ACCELERATION_OF_GRAVITY});
     mGameState.enemies[0].setSpeed(80);
 }
