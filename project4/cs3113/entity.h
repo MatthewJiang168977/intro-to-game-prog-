@@ -72,10 +72,11 @@ private:
     }
 
     void animate(float deltaTime);
-    void AIActivate(Entity *target, float deltaTime);
-    void AIWander();
-    void AIFollow(Entity *target);
+    void AIActivate(Entity *target, float deltaTime, Map *map);
+    void AIWander(Map *map);
+    void AIFollow(Entity *target, Map *map);
     void AIFly(float deltaTime);
+    bool hasGroundAhead(Map *map) const;
 
 public:
     static constexpr int   DEFAULT_SIZE          = 250;
@@ -119,7 +120,7 @@ public:
     Vector2     getVelocity()              const { return mVelocity;              }
     Vector2     getAcceleration()          const { return mAcceleration;          }
     Vector2     getScale()                 const { return mScale;                 }
-    Vector2     getColliderDimensions()    const { return mScale;                 }
+    Vector2     getColliderDimensions()    const { return mColliderDimensions;    }
     Vector2     getSpriteSheetDimensions() const { return mSpriteSheetDimensions; }
     Texture2D   getTexture()               const { return mTexture;               }
     TextureType getTextureType()           const { return mTextureType;           }
@@ -146,8 +147,7 @@ public:
         { mAcceleration = newAcceleration;         }
     void setScale(Vector2 newScale)
         { mScale = newScale;                       }
-    void setTexture(const char *textureFilepath)
-        { mTexture = LoadTexture(textureFilepath); }
+    void setTexture(const char *textureFilepath);
     void setColliderDimensions(Vector2 newDimensions) 
         { mColliderDimensions = newDimensions;     }
     void setSpriteSheetDimensions(Vector2 newDimensions) 
