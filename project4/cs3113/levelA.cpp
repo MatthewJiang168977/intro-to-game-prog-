@@ -47,7 +47,7 @@ void LevelA::initialise()
         PLAYER
     );
 
-    mGameState.player->setJumpingPower(550.0f);
+    mGameState.player->setJumpingPower(700.0f);
     mGameState.player->setColliderDimensions({
         mGameState.player->getScale().x / 2.0f,
         mGameState.player->getScale().y / 1.5f
