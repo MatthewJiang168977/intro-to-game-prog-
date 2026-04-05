@@ -60,19 +60,12 @@ void LevelB::initialise()
     mGameState.enemyCount = LEVELB_ENEMY_COUNT;
     mGameState.enemies    = new Entity[LEVELB_ENEMY_COUNT];
 
-    std::map<Direction, std::vector<int>> corgiAtlas = {
-        {DOWN,  { 16, 17, 18, 19, 20, 21     }},
-        {LEFT,  {  8,  9, 10, 11, 12, 13, 14, 15 }},
-        {UP,    { 16, 17, 18, 19, 20, 21     }},
-        {RIGHT, {  0,  1,  2,  3,  4,  5,  6,  7 }},
-    };
-
     // Enemy 0: Wanderer
-    mGameState.enemies[0].setTexture("assets/corgi.webp");
+    mGameState.enemies[0].setTexture("assets/Cat_Sprite_Sheet.png");
     mGameState.enemies[0].setEntityType(NPC);
     mGameState.enemies[0].setTextureType(ATLAS);
-    mGameState.enemies[0].setSpriteSheetDimensions({3, 8});
-    mGameState.enemies[0].setAnimationAtlas(corgiAtlas);
+    mGameState.enemies[0].setSpriteSheetDimensions(ATLAS_DIMENSIONS);
+    mGameState.enemies[0].setAnimationAtlas(catAnimationAtlas);
     mGameState.enemies[0].setDirection(LEFT);
     mGameState.enemies[0].setFrameSpeed(14);
     mGameState.enemies[0].setAIType(WANDERER);
@@ -84,11 +77,11 @@ void LevelB::initialise()
     mGameState.enemies[0].setSpeed(80);
 
     // Enemy 1: Follower 
-    mGameState.enemies[1].setTexture("assets/corgi.webp");
+    mGameState.enemies[1].setTexture("assets/Cat_Sprite_Sheet.png");
     mGameState.enemies[1].setEntityType(NPC);
     mGameState.enemies[1].setTextureType(ATLAS);
-    mGameState.enemies[1].setSpriteSheetDimensions({3, 8});
-    mGameState.enemies[1].setAnimationAtlas(corgiAtlas);
+    mGameState.enemies[1].setSpriteSheetDimensions(ATLAS_DIMENSIONS);
+    mGameState.enemies[1].setAnimationAtlas(catAnimationAtlas);
     mGameState.enemies[1].setDirection(LEFT);
     mGameState.enemies[1].setFrameSpeed(14);
     mGameState.enemies[1].setAIType(FOLLOWER);
