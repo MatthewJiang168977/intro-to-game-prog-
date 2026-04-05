@@ -15,7 +15,10 @@ Entity::Entity(Vector2 position, Vector2 scale, const char *textureFilepath,
     mColliderDimensions {scale}, mTexture {LoadTexture(textureFilepath)}, 
     mTextureType {SINGLE}, mDirection {RIGHT}, mAnimationAtlas {{}}, 
     mAnimationIndices {}, mFrameSpeed {0}, mSpeed {DEFAULT_SPEED}, 
-    mAngle {0.0f}, mEntityType {entityType} { }
+    mAngle {0.0f}, mEntityType {entityType}
+{
+    if (mTexture.id == 0) mTexture = LoadTexture("assets/Cat_Sprite_Sheet.png");
+}
 
 Entity::Entity(Vector2 position, Vector2 scale, const char *textureFilepath, 
         TextureType textureType, Vector2 spriteSheetDimensions, std::map<Direction, 
@@ -27,9 +30,25 @@ Entity::Entity(Vector2 position, Vector2 scale, const char *textureFilepath,
         mAnimationAtlas {animationAtlas}, mDirection {RIGHT},
         mAnimationIndices {animationAtlas.at(RIGHT)}, 
         mFrameSpeed {DEFAULT_FRAME_SPEED}, mAngle { 0.0f }, 
-        mSpeed { DEFAULT_SPEED }, mEntityType {entityType} { }
+        mSpeed { DEFAULT_SPEED }, mEntityType {entityType}
+{
+    if (mTexture.id == 0) mTexture = LoadTexture("assets/Cat_Sprite_Sheet.png");
+}
 
 Entity::~Entity() { UnloadTexture(mTexture); };
+
+void Entity::setTexture(const char *textureFilepath)
+{
+    if (mTexture.id != 0) UnloadTexture(mTexture);
+
+    mTexture = LoadTexture(textureFilepath);
+
+    if (mTexture.id == 0)
+    {
+        TraceLog(LOG_WARNING, "Failed to load texture: %s. Falling back to assets/Cat_Sprite_Sheet.png", textureFilepath);
+        mTexture = LoadTexture("assets/Cat_Sprite_Sheet.png");
+    }
+}
 
 void Entity::checkCollisionY(Entity *collidableEntities, int collisionCheckCount)
 {
@@ -195,7 +214,38 @@ void Entity::animate(float deltaTime)
     }
 }
 
-void Entity::AIWander(Map *map) { moveLeft(); }
+bool Entity::hasGroundAhead(Map *map) const
+{
+    if (map == nullptr || mAIType == FLYER) return true;
+
+    float direction = 0.0f;
+
+    if      (mMovement.x < 0.0f || mDirection == LEFT)  direction = -1.0f;
+    else if (mMovement.x > 0.0f || mDirection == RIGHT) direction =  1.0f;
+    else return true;
+
+    Vector2 floorProbe = {
+        mPosition.x + direction * (mColliderDimensions.x / 2.0f + 4.0f),
+        mPosition.y + mColliderDimensions.y / 2.0f + 4.0f
+    };
+
+    float xOverlap = 0.0f, yOverlap = 0.0f;
+    return map->isSolidTileAt(floorProbe, &xOverlap, &yOverlap);
+}
+
+void Entity::AIWander(Map *map)
+{
+    if (mDirection != LEFT && mDirection != RIGHT) mDirection = LEFT;
+
+    if (mDirection == LEFT) moveLeft();
+    else                    moveRight();
+
+    if (!hasGroundAhead(map))
+    {
+        if (mDirection == LEFT) moveRight();
+        else                    moveLeft();
+    }
+}
 
 void Entity::AIFollow(Entity *target, Map *map)
 {
@@ -209,6 +259,12 @@ void Entity::AIFollow(Entity *target, Map *map)
     case WALKING:
         if (mPosition.x > target->getPosition().x) moveLeft();
         else                                       moveRight();
+
+        if (!hasGroundAhead(map))
+        {
+            if (mDirection == LEFT) moveRight();
+            else                    moveLeft();
+        }
     
     default:
         break;
@@ -224,7 +280,6 @@ void Entity::AIFly(float deltaTime)
 }
 
 void Entity::AIActivate(Entity *target, float deltaTime, Map *map)
-
 {
     switch (mAIType)
     {
