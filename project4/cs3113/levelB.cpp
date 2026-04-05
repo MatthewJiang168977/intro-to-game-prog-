@@ -40,7 +40,7 @@ void LevelB::initialise()
     float sizeRatio = 32.0f / 32.0f;
 
     mGameState.player = new Entity(
-        {mOrigin.x - 500.0f, mOrigin.y - 200.0f},
+        {mOrigin.x - 500.0f, mOrigin.y - 230.0f},
         {150.0f * sizeRatio, 150.0f},
         "assets/Cat_Sprite_Sheet.png",
         ATLAS,
@@ -123,7 +123,7 @@ void LevelB::update(float deltaTime)
         if (*mGameState.lives <= 0)
             mGameState.nextSceneID = 5;
         else
-            mGameState.player->setPosition({mOrigin.x - 500.0f, mOrigin.y - 200.0f});
+            mGameState.player->setPosition({mOrigin.x - 500.0f, mOrigin.y - 230.0f});
     }
 
     // FALL OFF MAP 
@@ -134,7 +134,7 @@ void LevelB::update(float deltaTime)
         if (*mGameState.lives <= 0)
             mGameState.nextSceneID = 5;
         else
-            mGameState.player->setPosition({mOrigin.x - 500.0f, mOrigin.y - 200.0f});
+            mGameState.player->setPosition({mOrigin.x - 500.0f, mOrigin.y - 230.0f});
     }
 
     // LEVEL CLEAR 
