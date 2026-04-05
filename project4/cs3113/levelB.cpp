@@ -12,7 +12,8 @@ void LevelB::initialise()
     // AUDIO 
     mGameState.bgm       = LoadMusicStream("assets/bgm.ogg");
     mGameState.jumpSound = LoadSound("assets/jump.ogg");
-    mGameState.hitSound  = LoadSound("assets/hit.wav");
+    mGameState.hitSound   = LoadSound("assets/hit.wav");
+    mGameState.deathSound = LoadSound("assets/death.wav");
 
     SetMusicVolume(mGameState.bgm, 0.33f);
     PlayMusicStream(mGameState.bgm);
@@ -38,7 +39,7 @@ void LevelB::initialise()
     float sizeRatio = 32.0f / 32.0f;
 
     mGameState.player = new Entity(
-        {mOrigin.x - 500.0f, mOrigin.y - 200.0f},
+        {mOrigin.x - 500.0f, mOrigin.y - 230.0f},
         {150.0f * sizeRatio, 150.0f},
         "assets/Cat_Sprite_Sheet.png",
         ATLAS,
@@ -58,42 +59,35 @@ void LevelB::initialise()
     mGameState.enemyCount = LEVELB_ENEMY_COUNT;
     mGameState.enemies    = new Entity[LEVELB_ENEMY_COUNT];
 
-    std::map<Direction, std::vector<int>> corgiAtlas = {
-        {DOWN,  { 16, 17, 18, 19, 20, 21     }},
-        {LEFT,  {  8,  9, 10, 11, 12, 13, 14, 15 }},
-        {UP,    { 16, 17, 18, 19, 20, 21     }},
-        {RIGHT, {  0,  1,  2,  3,  4,  5,  6,  7 }},
-    };
-
     // Enemy 0: Wanderer
-    mGameState.enemies[0].setTexture("assets/Corgi.png");
+    mGameState.enemies[0].setTexture("assets/Cat_Sprite_Sheet.png");
     mGameState.enemies[0].setEntityType(NPC);
     mGameState.enemies[0].setTextureType(ATLAS);
-    mGameState.enemies[0].setSpriteSheetDimensions({3, 8});
-    mGameState.enemies[0].setAnimationAtlas(corgiAtlas);
+    mGameState.enemies[0].setSpriteSheetDimensions(ATLAS_DIMENSIONS);
+    mGameState.enemies[0].setAnimationAtlas(catAnimationAtlas);
     mGameState.enemies[0].setDirection(LEFT);
     mGameState.enemies[0].setFrameSpeed(14);
-    mGameState.enemies[0].setAIType(WANDERER);
-    mGameState.enemies[0].setAIState(WALKING);
-    mGameState.enemies[0].setScale({TILE_DIMENSION, TILE_DIMENSION});
+    mGameState.enemies[0].setAIType(FOLLOWER);
+    mGameState.enemies[0].setAIState(IDLE);
+    mGameState.enemies[0].setScale({TILE_DIMENSION * 1.4f, TILE_DIMENSION * 1.4f});
     mGameState.enemies[0].setColliderDimensions({TILE_DIMENSION, TILE_DIMENSION});
-    mGameState.enemies[0].setPosition({mOrigin.x - 100.0f, mOrigin.y - 150.0f});
+    mGameState.enemies[0].setPosition({mOrigin.x + 250.0f, mOrigin.y - 150.0f});
     mGameState.enemies[0].setAcceleration({0.0f, ACCELERATION_OF_GRAVITY});
     mGameState.enemies[0].setSpeed(80);
 
     // Enemy 1: Follower 
-    mGameState.enemies[1].setTexture("assets/Corgi.png");
+    mGameState.enemies[1].setTexture("assets/Cat_Sprite_Sheet.png");
     mGameState.enemies[1].setEntityType(NPC);
     mGameState.enemies[1].setTextureType(ATLAS);
-    mGameState.enemies[1].setSpriteSheetDimensions({3, 8});
-    mGameState.enemies[1].setAnimationAtlas(corgiAtlas);
+    mGameState.enemies[1].setSpriteSheetDimensions(ATLAS_DIMENSIONS);
+    mGameState.enemies[1].setAnimationAtlas(catAnimationAtlas);
     mGameState.enemies[1].setDirection(LEFT);
     mGameState.enemies[1].setFrameSpeed(14);
     mGameState.enemies[1].setAIType(FOLLOWER);
     mGameState.enemies[1].setAIState(IDLE);
-    mGameState.enemies[1].setScale({TILE_DIMENSION, TILE_DIMENSION});
+    mGameState.enemies[1].setScale({TILE_DIMENSION * 1.4f, TILE_DIMENSION * 1.4f});
     mGameState.enemies[1].setColliderDimensions({TILE_DIMENSION, TILE_DIMENSION});
-    mGameState.enemies[1].setPosition({mOrigin.x + 300.0f, mOrigin.y - 150.0f});
+    mGameState.enemies[1].setPosition({mOrigin.x + 700.0f, mOrigin.y - 150.0f});
     mGameState.enemies[1].setAcceleration({0.0f, ACCELERATION_OF_GRAVITY});
     mGameState.enemies[1].setSpeed(120);
 }
@@ -124,22 +118,24 @@ void LevelB::update(float deltaTime)
     {
         (*mGameState.lives)--;
         PlaySound(mGameState.hitSound);
+        PlaySound(mGameState.deathSound);
 
         if (*mGameState.lives <= 0)
             mGameState.nextSceneID = 5;
         else
-            mGameState.player->setPosition({mOrigin.x - 500.0f, mOrigin.y - 200.0f});
+            mGameState.player->setPosition({mOrigin.x - 500.0f, mOrigin.y - 230.0f});
     }
 
     // FALL OFF MAP 
     if (mGameState.player->getPosition().y > END_GAME_THRESHOLD)
     {
         (*mGameState.lives)--;
+        PlaySound(mGameState.deathSound);
 
         if (*mGameState.lives <= 0)
             mGameState.nextSceneID = 5;
         else
-            mGameState.player->setPosition({mOrigin.x - 500.0f, mOrigin.y - 200.0f});
+            mGameState.player->setPosition({mOrigin.x - 500.0f, mOrigin.y - 230.0f});
     }
 
     // LEVEL CLEAR 
@@ -172,4 +168,5 @@ void LevelB::shutdown()
     UnloadMusicStream(mGameState.bgm);
     UnloadSound(mGameState.jumpSound);
     UnloadSound(mGameState.hitSound);
+    UnloadSound(mGameState.deathSound);
 }
