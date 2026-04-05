@@ -9,7 +9,9 @@ void LevelB::initialise()
 {
     mGameState.nextSceneID = -1;
 
-    // AUDIO 
+    /*
+        ----------- AUDIO -----------
+    */
     mGameState.bgm       = LoadMusicStream("assets/bgm.ogg");
     mGameState.jumpSound = LoadSound("assets/jump.ogg");
     mGameState.hitSound  = LoadSound("assets/hit.wav");
