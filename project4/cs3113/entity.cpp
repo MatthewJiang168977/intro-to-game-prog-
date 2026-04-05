@@ -229,11 +229,11 @@ void Entity::AIActivate(Entity *target, float deltaTime, Map *map)
     switch (mAIType)
     {
     case WANDERER:
-        AIWander();
+        AIWander(map);
         break;
 
     case FOLLOWER:
-        AIFollow(target);
+        AIFollow(target, map);
         break;
 
     case FLYER:
