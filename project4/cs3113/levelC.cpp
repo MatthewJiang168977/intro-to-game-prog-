@@ -47,7 +47,7 @@ void LevelC::initialise()
         PLAYER
     );
 
-    mGameState.player->setJumpingPower(550.0f);
+    mGameState.player->setJumpingPower(800.0f);
     mGameState.player->setColliderDimensions({
         mGameState.player->getScale().x / 2.0f,
         mGameState.player->getScale().y / 1.5f
@@ -70,9 +70,9 @@ void LevelC::initialise()
     mGameState.enemies[0].setAIState(IDLE);
     mGameState.enemies[0].setScale({TILE_DIMENSION * 1.4f, TILE_DIMENSION * 1.4f});
     mGameState.enemies[0].setColliderDimensions({TILE_DIMENSION, TILE_DIMENSION});
-    mGameState.enemies[0].setPosition({mOrigin.x - 1010.0f, mOrigin.y - 150.0f});
+    mGameState.enemies[0].setPosition({mOrigin.x - 800.0f, mOrigin.y - 150.0f});
     mGameState.enemies[0].setAcceleration({0.0f, ACCELERATION_OF_GRAVITY});
-    mGameState.enemies[0].setSpeed(100);
+    mGameState.enemies[0].setSpeed(70);
 
     // Enemy 1: Follower
     mGameState.enemies[1].setTexture("assets/Cat_Sprite_Sheet.png");
@@ -86,7 +86,7 @@ void LevelC::initialise()
     mGameState.enemies[1].setAIState(IDLE);
     mGameState.enemies[1].setScale({TILE_DIMENSION * 1.4f, TILE_DIMENSION * 1.4f});
     mGameState.enemies[1].setColliderDimensions({TILE_DIMENSION, TILE_DIMENSION});
-    mGameState.enemies[1].setPosition({mOrigin.x - 930.0f, mOrigin.y - 150.0f});
+    mGameState.enemies[1].setPosition({mOrigin.x - 400.0f, mOrigin.y - 150.0f});
     mGameState.enemies[1].setAcceleration({0.0f, ACCELERATION_OF_GRAVITY});
     mGameState.enemies[1].setSpeed(140);
 

@@ -47,7 +47,7 @@ void LevelA::initialise()
         PLAYER
     );
 
-    mGameState.player->setJumpingPower(700.0f);
+    mGameState.player->setJumpingPower(800.0f);
     mGameState.player->setColliderDimensions({
         mGameState.player->getScale().x / 2.0f,
         mGameState.player->getScale().y / 1.5f
@@ -72,7 +72,7 @@ void LevelA::initialise()
     mGameState.enemies[0].setColliderDimensions({TILE_DIMENSION, TILE_DIMENSION});
     mGameState.enemies[0].setPosition({mOrigin.x - 40.0f, mOrigin.y - 150.0f});
     mGameState.enemies[0].setAcceleration({0.0f, ACCELERATION_OF_GRAVITY});
-    mGameState.enemies[0].setSpeed(80);
+    mGameState.enemies[0].setSpeed(50);
 }
 
 void LevelA::update(float deltaTime)
