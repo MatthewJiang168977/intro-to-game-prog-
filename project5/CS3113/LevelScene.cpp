@@ -109,6 +109,15 @@ static void initEnemy(Entity &e, Vector2 pos, const char *tex, const std::string
     e.setAcceleration({0,0});
 }
 
+static const char* getTextureFromEnemyName(const std::string &name)
+{
+    if (name == "Intern")          return "assets/intern.png";
+    if (name == "Manager")         return "assets/manager.png";
+    if (name == "Consultant")      return "assets/consultant.png";
+    if (name == "CEO")             return "assets/boss.png";
+    return "assets/intern.png";
+}
+
 // ============================================================
 LevelScene::LevelScene(SceneType t) : mLevelType(t) {}
 LevelScene::~LevelScene() { shutdown(); }
@@ -286,34 +295,37 @@ void LevelScene::checkEnemyEncounters()
             mBattleEnemyName = "";
             mBattleEnemyHP = 0;
             mBattleEnemyDamage = 0;
+            mBattleEnemyTextures[0] = mBattleEnemyTextures[1] = mBattleEnemyTextures[2] = nullptr;
 
             mBattleEnemyIndices[mBattleEnemyIndexCount++] = i;
             mBattleEnemyName = mEnemies[i].getName();
             mBattleEnemyHP += mEnemies[i].getHP();
             mBattleEnemyDamage += (int)mEnemies[i].getDamage();
+            mBattleEnemyTextures[0] = getTextureFromEnemyName(mEnemies[i].getName());
 
-            // Pull in nearby enemies to create mixed multi-enemy encounters.
-            for (int j = 0; j < mEnemyCount && mBattleEnemyIndexCount < 3; j++)
+            // Pull in nearby enemies to create mixed multi-enemy encounters
+            // (disabled on Level 1 for a gentler intro floor).
+            if (mLevelType != LEVEL_1)
             {
-                if (j == i || !mEnemies[j].isActive()) continue;
-
-                float groupDist = Vector2Distance(mEnemies[i].getPosition(), mEnemies[j].getPosition());
-                if (groupDist <= TILE * 2.25f)
+                for (int j = 0; j < mEnemyCount && mBattleEnemyIndexCount < 3; j++)
                 {
-                    mBattleEnemyIndices[mBattleEnemyIndexCount++] = j;
-                    mBattleEnemyName += " + " + mEnemies[j].getName();
-                    mBattleEnemyHP += mEnemies[j].getHP();
-                    mBattleEnemyDamage += (int)mEnemies[j].getDamage();
+                    if (j == i || !mEnemies[j].isActive()) continue;
+
+                    float groupDist = Vector2Distance(mEnemies[i].getPosition(), mEnemies[j].getPosition());
+                    if (groupDist <= TILE * 2.25f)
+                    {
+                        int slot = mBattleEnemyIndexCount;
+                        mBattleEnemyIndices[slot] = j;
+                        mBattleEnemyTextures[slot] = getTextureFromEnemyName(mEnemies[j].getName());
+                        mBattleEnemyIndexCount++;
+                        mBattleEnemyName += " + " + mEnemies[j].getName();
+                        mBattleEnemyHP += mEnemies[j].getHP();
+                        mBattleEnemyDamage += (int)mEnemies[j].getDamage();
+                    }
                 }
             }
 
-            // Determine texture path from enemy name
-            std::string leadName = mEnemies[i].getName();
-            if (leadName == "Intern")           mBattleEnemyTexture = "assets/intern.png";
-            else if (leadName == "Manager")     mBattleEnemyTexture = "assets/manager.png";
-            else if (leadName == "Consultant")  mBattleEnemyTexture = "assets/consultant.png";
-            else if (leadName == "CEO")         mBattleEnemyTexture = "assets/boss.png";
-            else                                        mBattleEnemyTexture = "assets/intern.png";
+            mBattleEnemyTexture = mBattleEnemyTextures[0];
 
             // Push player away so they don't immediately re-trigger
             Vector2 diff = Vector2Subtract(mPlayer->getPosition(), mEnemies[i].getPosition());

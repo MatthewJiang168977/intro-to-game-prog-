@@ -106,10 +106,16 @@ void switchToScene(SceneType type)
         gLevelScene->getStack(stack, &ss);
         b->setPlayerData(gLevelScene->getPlayerHP(), gLevelScene->getPlayerMaxHP(),
                          stack, ss, gLevelScene->getPlayerTexture());
+        const char *enemyTextures[3] = {
+            gLevelScene->getBattleEnemyTextureAt(0),
+            gLevelScene->getBattleEnemyTextureAt(1),
+            gLevelScene->getBattleEnemyTextureAt(2)
+        };
         b->setEnemyData(gLevelScene->getBattleEnemyName(),
                         gLevelScene->getBattleEnemyHP(),
                         gLevelScene->getBattleEnemyDamage(),
-                        gLevelScene->getBattleEnemyTexture(),
+                        enemyTextures,
+                        gLevelScene->getBattleEnemyCount(),
                         gLevelScene->getBattleEnemyIndex());
         b->initialise();
         gCurrentScene = b;
