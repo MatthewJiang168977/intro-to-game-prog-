@@ -149,6 +149,8 @@ void returnFromBattle()
         gLevelScene->setStack(stack, ss);
         // Remove the full encounter group if one was generated.
         gLevelScene->removeEnemy(-1);
+        // Fallback: always remove the lead enemy too.
+        gLevelScene->removeEnemy(b->getEnemyIndex());
 
         b->shutdown(); delete b;
         gCurrentScene = gLevelScene;

@@ -309,11 +309,17 @@ void BattleScene::render()
     float startX = sw - 180 - groupWidth;
     for (int i = 0; i < mEnemyGroupCount; i++) {
         Texture2D tex = mEnemyGroupTex[i];
-        Rectangle eSrc = { 0, 0, (float)tex.width, (float)tex.height };
         float ex = startX + i * (64 * enemyScale + 12) + (mShakeTimer > 0 ? sx : 0);
         float ey = (float)(sh/2 - 84) + (mShakeTimer > 0 ? sy : 0);
         Rectangle eDst = { ex, ey, 64*enemyScale, 64*enemyScale };
-        DrawTexturePro(tex, eSrc, eDst, {0,0}, 0, WHITE);
+
+        if (tex.id != 0) {
+            Rectangle eSrc = { 0, 0, (float)tex.width, (float)tex.height };
+            DrawTexturePro(tex, eSrc, eDst, {0,0}, 0, WHITE);
+        } else {
+            DrawRectangle(ex, ey, eDst.width, eDst.height, (Color){120, 60, 60, 255});
+            DrawText("ENEMY", ex + 24, ey + 64, 20, WHITE);
+        }
     }
 
     // Enemy info
