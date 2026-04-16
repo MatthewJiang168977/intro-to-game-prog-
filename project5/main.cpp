@@ -1,0 +1,331 @@
+/**
+* Author: [Your name here]
+* Assignment: STACKOVERFLOW
+* Date due: 2026-04-24, 2:00pm
+* I pledge that I have completed this assignment without
+* collaborating with anyone else, in conformance with the
+* NYU School of Engineering Policies and Procedures on
+* Academic Misconduct.
+**/
+
+#include "CS3113/ShaderProgram.h"
+#include "CS3113/LevelScene.h"
+#include "CS3113/MenuScene.h"
+
+// ============================================================
+//  Constants
+// ============================================================
+constexpr int SCREEN_WIDTH  = 1000,
+              SCREEN_HEIGHT = 600,
+              FPS           = 120;
+
+constexpr Vector2 ORIGIN = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
+constexpr float   FIXED_TIMESTEP = 1.0f / 60.0f;
+
+// ============================================================
+//  Globals
+// ============================================================
+AppStatus gAppStatus     = RUNNING;
+float     gPreviousTicks = 0.0f,
+          gTimeAccumulator = 0.0f;
+
+Camera2D gCamera = { 0 };
+
+Scene       *gCurrentScene = nullptr;
+SceneType    gCurrentType  = MENU_SCENE;
+LevelScene  *gLevelScene   = nullptr;
+SceneType    gLevelType    = LEVEL_1;
+
+ShaderProgram gShader;
+Effects      *gEffects = nullptr;
+
+// Persistent player state
+int     gPlayerHP = 100, gPlayerMaxHP = 100;
+Ability gStack[MAX_STACK];
+int     gStackSize = 0;
+float   gEndScreenTimer = 0;
+
+// ============================================================
+//  Scene switching
+// ============================================================
+void switchToScene(SceneType type);
+void returnFromBattle();
+
+void switchToScene(SceneType type)
+{
+    // Save state from level scene before leaving
+    if (gLevelScene && gCurrentType != BATTLE_SCENE) {
+        gPlayerHP    = gLevelScene->getPlayerHP();
+        gPlayerMaxHP = gLevelScene->getPlayerMaxHP();
+        gLevelScene->getStack(gStack, &gStackSize);
+    }
+
+    // Don't delete level scene when entering battle (it stays alive)
+    if (type == BATTLE_SCENE) {
+        // Level scene preserved
+    } else {
+        if (gCurrentScene && gCurrentScene != (Scene*)gLevelScene)
+            { gCurrentScene->shutdown(); delete gCurrentScene; }
+        if (gLevelScene && type != LEVEL_1 && type != LEVEL_2 && type != LEVEL_3)
+            { gLevelScene->shutdown(); delete gLevelScene; gLevelScene = nullptr; }
+        gCurrentScene = nullptr;
+    }
+
+    gCurrentType = type;
+
+    switch (type)
+    {
+    case MENU_SCENE:
+    {
+        gPlayerHP = 100; gPlayerMaxHP = 100; gStackSize = 0;
+        auto *m = new MenuScene();
+        m->initialise();
+        gCurrentScene = m;
+        break;
+    }
+    case LEVEL_1: case LEVEL_2: case LEVEL_3:
+    {
+        gLevelType = type;
+        gLevelScene = new LevelScene(type);
+        gLevelScene->setPlayerHP(gPlayerHP, gPlayerMaxHP);
+        if (gStackSize > 0) gLevelScene->setStack(gStack, gStackSize);
+        gLevelScene->initialise();
+        gCurrentScene = gLevelScene;
+
+        // Fade in when entering a new level
+        gEffects->start(FADEIN);
+        break;
+    }
+    case BATTLE_SCENE:
+    {
+        // Fade out effect before battle
+        auto *b = new BattleScene();
+        b->setReturnScene(gLevelType);
+
+        Ability stack[MAX_STACK]; int ss;
+        gLevelScene->getStack(stack, &ss);
+        b->setPlayerData(gLevelScene->getPlayerHP(), gLevelScene->getPlayerMaxHP(),
+                         stack, ss, gLevelScene->getPlayerTexture());
+        b->setEnemyData(gLevelScene->getBattleEnemyName(),
+                        gLevelScene->getBattleEnemyHP(),
+                        gLevelScene->getBattleEnemyDamage(),
+                        gLevelScene->getBattleEnemyTexture(),
+                        gLevelScene->getBattleEnemyIndex());
+        b->initialise();
+        gCurrentScene = b;
+        gLevelScene->clearBattle();
+        break;
+    }
+    case WIN_SCENE: case LOSE_SCENE:
+        gEndScreenTimer = 0;
+        gCurrentScene = nullptr;
+        if (gLevelScene) { gLevelScene->shutdown(); delete gLevelScene; gLevelScene = nullptr; }
+        break;
+    }
+}
+
+void returnFromBattle()
+{
+    BattleScene *b = dynamic_cast<BattleScene*>(gCurrentScene);
+    if (!b || !gLevelScene) return;
+
+    BattleResult result = b->getResult();
+
+    if (result == RESULT_WIN) {
+        gPlayerHP    = b->getPlayerHP();
+        gPlayerMaxHP = b->getPlayerMaxHP();
+        Ability stack[MAX_STACK]; int ss;
+        b->getStack(stack, &ss);
+
+        gLevelScene->setPlayerHP(gPlayerHP, gPlayerMaxHP);
+        gLevelScene->setStack(stack, ss);
+        gLevelScene->removeEnemy(b->getEnemyIndex());
+
+        b->shutdown(); delete b;
+        gCurrentScene = gLevelScene;
+        gCurrentType  = gLevelType;
+
+        // Fade in when returning from battle
+        gEffects->start(FADEIN);
+    }
+    else if (result == RESULT_LOSE) {
+        b->shutdown(); delete b;
+        gCurrentScene = nullptr;
+        switchToScene(LOSE_SCENE);
+    }
+}
+
+// ============================================================
+//  Core functions
+// ============================================================
+void initialise()
+{
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "STACKOVERFLOW");
+    InitAudioDevice();
+
+    // Load shader (professor's pattern)
+    gShader.load("shaders/vertex.glsl", "shaders/fragment.glsl");
+
+    // Effects overlay
+    gEffects = new Effects(ORIGIN, (float)SCREEN_WIDTH * 1.5f, (float)SCREEN_HEIGHT * 1.5f);
+
+    // Camera
+    gCamera.offset   = ORIGIN;
+    gCamera.rotation = 0.0f;
+    gCamera.zoom     = 1.0f;
+
+    switchToScene(MENU_SCENE);
+
+    SetTargetFPS(FPS);
+}
+
+void processInput()
+{
+    if (IsKeyPressed(KEY_Q) || WindowShouldClose()) { gAppStatus = TERMINATED; return; }
+
+    if (gCurrentType == WIN_SCENE || gCurrentType == LOSE_SCENE) {
+        if (IsKeyPressed(KEY_ENTER)) switchToScene(MENU_SCENE);
+        return;
+    }
+
+    if (gCurrentScene) gCurrentScene->processInput();
+}
+
+void update()
+{
+    float ticks = (float)GetTime();
+    float deltaTime = ticks - gPreviousTicks;
+    gPreviousTicks = ticks;
+
+    deltaTime += gTimeAccumulator;
+
+    if (deltaTime < FIXED_TIMESTEP)
+    {
+        gTimeAccumulator = deltaTime;
+        return;
+    }
+
+    while (deltaTime >= FIXED_TIMESTEP)
+    {
+        if (gCurrentType == WIN_SCENE || gCurrentType == LOSE_SCENE)
+        {
+            gEndScreenTimer += FIXED_TIMESTEP;
+        }
+        else if (gCurrentScene)
+        {
+            gCurrentScene->update(FIXED_TIMESTEP);
+
+            // Update effects overlay position
+            if (gLevelScene && (gCurrentType >= LEVEL_1 && gCurrentType <= LEVEL_3)) {
+                // Camera is managed inside LevelScene::render via BeginMode2D
+                // We just update effects here
+                Vector2 effectTarget = ORIGIN;
+                gEffects->update(FIXED_TIMESTEP, &effectTarget);
+            }
+
+            // Check battle trigger
+            if (gCurrentType >= LEVEL_1 && gCurrentType <= LEVEL_3 && gLevelScene) {
+                if (gLevelScene->wantsBattle()) {
+                    switchToScene(BATTLE_SCENE);
+                    break;
+                }
+            }
+
+            // Check scene transitions
+            if (gCurrentScene && gCurrentScene->shouldTransition()) {
+                SceneType next = gCurrentScene->getNextScene();
+                if (gCurrentType == BATTLE_SCENE)
+                    returnFromBattle();
+                else
+                    switchToScene(next);
+                break;
+            }
+        }
+
+        deltaTime -= FIXED_TIMESTEP;
+    }
+
+    gTimeAccumulator = deltaTime;
+}
+
+void render()
+{
+    BeginDrawing();
+    ClearBackground((Color){15, 15, 25, 255});
+
+    if (gCurrentType == WIN_SCENE)
+    {
+        int sw = GetScreenWidth();
+        const char *t = "YOU LEAKED THE IPO";
+        DrawText(t, sw/2 - MeasureText(t, 48)/2, 180, 48, GREEN);
+        const char *s = "MegaCorp has been exposed. The people win.";
+        DrawText(s, sw/2 - MeasureText(s, 20)/2, 260, 20, LIGHTGRAY);
+        if (gEndScreenTimer > 1) {
+            const char *p = "Press ENTER to return to menu";
+            DrawText(p, sw/2 - MeasureText(p, 20)/2, 380, 20, YELLOW);
+        }
+    }
+    else if (gCurrentType == LOSE_SCENE)
+    {
+        int sw = GetScreenWidth();
+        const char *t = "YOU'VE BEEN FIRED";
+        DrawText(t, sw/2 - MeasureText(t, 48)/2, 180, 48, RED);
+        const char *s = "Security has escorted you from the building.";
+        DrawText(s, sw/2 - MeasureText(s, 20)/2, 260, 20, LIGHTGRAY);
+        if (gEndScreenTimer > 1) {
+            const char *p = "Press ENTER to try again";
+            DrawText(p, sw/2 - MeasureText(p, 20)/2, 380, 20, YELLOW);
+        }
+    }
+    else if (gCurrentScene)
+    {
+        // Apply burnout shader during exploration (not during battle or menu)
+        bool useShader = (gCurrentType >= LEVEL_1 && gCurrentType <= LEVEL_3) 
+                         && gShader.isLoaded();
+
+        if (useShader && gLevelScene) {
+            float hpRatio = gLevelScene->getPlayerHPRatio();
+            gShader.setFloat("hp_ratio", hpRatio);
+            gShader.begin();
+        }
+
+        gCurrentScene->render();
+
+        if (useShader) gShader.end();
+
+        // Render effects overlay (fade in/out) — screen space
+        gEffects->render();
+    }
+
+    EndDrawing();
+}
+
+void shutdown()
+{
+    if (gCurrentScene && gCurrentScene != (Scene*)gLevelScene)
+        { gCurrentScene->shutdown(); delete gCurrentScene; }
+    if (gLevelScene) { gLevelScene->shutdown(); delete gLevelScene; }
+
+    delete gEffects;
+    gEffects = nullptr;
+
+    gShader.unload();
+
+    CloseAudioDevice();
+    CloseWindow();
+}
+
+int main(void)
+{
+    initialise();
+
+    while (gAppStatus == RUNNING)
+    {
+        processInput();
+        update();
+        render();
+    }
+
+    shutdown();
+    return 0;
+}
