@@ -13,7 +13,7 @@ constexpr unsigned int PR = 7;  // printer
 
 constexpr int   LVL_W = 24;
 constexpr int   LVL_H = 18;
-constexpr float TILE  = 48.0f;
+constexpr float TILE  = 96.0f;
 
 // Ninja Adventure style anim: row0=down, row1=left, row2=right, row3=up
 static std::map<Direction, std::vector<int>> makeAnim4x4()
@@ -253,6 +253,17 @@ Texture2D LevelScene::getPlayerTexture() const { return mPlayer->getTexture(); }
 
 void LevelScene::removeEnemy(int index)
 {
+    if (index == -1 && mBattleEnemyIndexCount > 0)
+    {
+        for (int i = 0; i < mBattleEnemyIndexCount; i++)
+        {
+            int enemyIdx = mBattleEnemyIndices[i];
+            if (enemyIdx >= 0 && enemyIdx < mEnemyCount) mEnemies[enemyIdx].deactivate();
+        }
+        mBattleEnemyIndexCount = 0;
+        return;
+    }
+
     if (index >= 0 && index < mEnemyCount) mEnemies[index].deactivate();
 }
 
@@ -271,15 +282,37 @@ void LevelScene::checkEnemyEncounters()
         {
             mWantsBattle = true;
             mBattleEnemyIndex = i;
+            mBattleEnemyIndexCount = 0;
+            mBattleEnemyName = "";
+            mBattleEnemyHP = 0;
+            mBattleEnemyDamage = 0;
+
+            mBattleEnemyIndices[mBattleEnemyIndexCount++] = i;
             mBattleEnemyName = mEnemies[i].getName();
-            mBattleEnemyHP = mEnemies[i].getHP();
-            mBattleEnemyDamage = (int)mEnemies[i].getDamage();
+            mBattleEnemyHP += mEnemies[i].getHP();
+            mBattleEnemyDamage += (int)mEnemies[i].getDamage();
+
+            // Pull in nearby enemies to create mixed multi-enemy encounters.
+            for (int j = 0; j < mEnemyCount && mBattleEnemyIndexCount < 3; j++)
+            {
+                if (j == i || !mEnemies[j].isActive()) continue;
+
+                float groupDist = Vector2Distance(mEnemies[i].getPosition(), mEnemies[j].getPosition());
+                if (groupDist <= TILE * 2.25f)
+                {
+                    mBattleEnemyIndices[mBattleEnemyIndexCount++] = j;
+                    mBattleEnemyName += " + " + mEnemies[j].getName();
+                    mBattleEnemyHP += mEnemies[j].getHP();
+                    mBattleEnemyDamage += (int)mEnemies[j].getDamage();
+                }
+            }
 
             // Determine texture path from enemy name
-            if (mBattleEnemyName == "Intern")           mBattleEnemyTexture = "assets/intern.png";
-            else if (mBattleEnemyName == "Manager")     mBattleEnemyTexture = "assets/manager.png";
-            else if (mBattleEnemyName == "Consultant")  mBattleEnemyTexture = "assets/consultant.png";
-            else if (mBattleEnemyName == "CEO")         mBattleEnemyTexture = "assets/boss.png";
+            std::string leadName = mEnemies[i].getName();
+            if (leadName == "Intern")           mBattleEnemyTexture = "assets/intern.png";
+            else if (leadName == "Manager")     mBattleEnemyTexture = "assets/manager.png";
+            else if (leadName == "Consultant")  mBattleEnemyTexture = "assets/consultant.png";
+            else if (leadName == "CEO")         mBattleEnemyTexture = "assets/boss.png";
             else                                        mBattleEnemyTexture = "assets/intern.png";
 
             // Push player away so they don't immediately re-trigger
@@ -357,8 +390,7 @@ void LevelScene::update(float deltaTime)
     checkPickupCollisions();
     checkElevatorCollision();
 
-    Vector2 pp = mPlayer->getPosition();
-    panCamera(&mCamera, &pp);
+    mCamera.target = mPlayer->getPosition();
 }
 
 // ============================================================

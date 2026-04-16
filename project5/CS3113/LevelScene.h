@@ -33,7 +33,7 @@ public:
     int  getBattleEnemyHP() const { return mBattleEnemyHP; }
     int  getBattleEnemyDamage() const { return mBattleEnemyDamage; }
     Texture2D getPlayerTexture() const;
-    void clearBattle() { mWantsBattle = false; }
+    void clearBattle() { mWantsBattle = false; mBattleEnemyIndexCount = 0; }
 
     // Remove defeated enemy after battle
     void removeEnemy(int index);
@@ -71,6 +71,8 @@ private:
     std::string mBattleEnemyName;
     int  mBattleEnemyHP = 0;
     int  mBattleEnemyDamage = 0;
+    int  mBattleEnemyIndices[3] = {-1, -1, -1};
+    int  mBattleEnemyIndexCount = 0;
 
     void setupLevel1();
     void setupLevel2();
