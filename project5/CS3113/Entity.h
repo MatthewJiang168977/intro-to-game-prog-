@@ -99,6 +99,10 @@ public:
     Entity(Vector2 position, Vector2 scale, const char *textureFilepath, 
         TextureType textureType, Vector2 spriteSheetDimensions, 
         std::map<Direction, std::vector<int>> animationAtlas, EntityType entityType);
+    Entity(const Entity&) = delete;
+    Entity& operator=(const Entity&) = delete;
+    Entity(Entity&& other) noexcept;
+    Entity& operator=(Entity&& other) noexcept;
     ~Entity();
 
     void update(float deltaTime, Entity *player, Map *map, 

@@ -29,6 +29,8 @@ public:
     bool wantsBattle() const { return mWantsBattle; }
     int  getBattleEnemyIndex() const { return mBattleEnemyIndex; }
     const char* getBattleEnemyTexture() const { return mBattleEnemyTexture; }
+    const char* getBattleEnemyTextureAt(int i) const { return mBattleEnemyTextures[i]; }
+    int  getBattleEnemyCount() const { return mBattleEnemyIndexCount > 0 ? mBattleEnemyIndexCount : 1; }
     std::string getBattleEnemyName() const { return mBattleEnemyName; }
     int  getBattleEnemyHP() const { return mBattleEnemyHP; }
     int  getBattleEnemyDamage() const { return mBattleEnemyDamage; }
@@ -71,6 +73,9 @@ private:
     std::string mBattleEnemyName;
     int  mBattleEnemyHP = 0;
     int  mBattleEnemyDamage = 0;
+    const char *mBattleEnemyTextures[3] = {nullptr, nullptr, nullptr};
+    int  mBattleEnemyIndices[3] = {-1, -1, -1};
+    int  mBattleEnemyIndexCount = 0;
 
     void setupLevel1();
     void setupLevel2();

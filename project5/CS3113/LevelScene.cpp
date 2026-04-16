@@ -13,7 +13,7 @@ constexpr unsigned int PR = 7;  // printer
 
 constexpr int   LVL_W = 24;
 constexpr int   LVL_H = 18;
-constexpr float TILE  = 48.0f;
+constexpr float TILE  = 96.0f;
 
 // Ninja Adventure style anim: row0=down, row1=left, row2=right, row3=up
 static std::map<Direction, std::vector<int>> makeAnim4x4()
@@ -107,6 +107,15 @@ static void initEnemy(Entity &e, Vector2 pos, const char *tex, const std::string
     e.setHP(hp); e.setDamage(dmg); e.setName(name);
     e.setColliderDimensions({sz*0.5f, sz*0.5f});
     e.setAcceleration({0,0});
+}
+
+static const char* getTextureFromEnemyName(const std::string &name)
+{
+    if (name == "Intern")          return "assets/intern.png";
+    if (name == "Manager")         return "assets/manager.png";
+    if (name == "Consultant")      return "assets/consultant.png";
+    if (name == "CEO")             return "assets/boss.png";
+    return "assets/intern.png";
 }
 
 // ============================================================
@@ -253,6 +262,17 @@ Texture2D LevelScene::getPlayerTexture() const { return mPlayer->getTexture(); }
 
 void LevelScene::removeEnemy(int index)
 {
+    if (index == -1 && mBattleEnemyIndexCount > 0)
+    {
+        for (int i = 0; i < mBattleEnemyIndexCount; i++)
+        {
+            int enemyIdx = mBattleEnemyIndices[i];
+            if (enemyIdx >= 0 && enemyIdx < mEnemyCount) mEnemies[enemyIdx].deactivate();
+        }
+        mBattleEnemyIndexCount = 0;
+        return;
+    }
+
     if (index >= 0 && index < mEnemyCount) mEnemies[index].deactivate();
 }
 
@@ -271,16 +291,41 @@ void LevelScene::checkEnemyEncounters()
         {
             mWantsBattle = true;
             mBattleEnemyIndex = i;
-            mBattleEnemyName = mEnemies[i].getName();
-            mBattleEnemyHP = mEnemies[i].getHP();
-            mBattleEnemyDamage = (int)mEnemies[i].getDamage();
+            mBattleEnemyIndexCount = 0;
+            mBattleEnemyName = "";
+            mBattleEnemyHP = 0;
+            mBattleEnemyDamage = 0;
+            mBattleEnemyTextures[0] = mBattleEnemyTextures[1] = mBattleEnemyTextures[2] = nullptr;
 
-            // Determine texture path from enemy name
-            if (mBattleEnemyName == "Intern")           mBattleEnemyTexture = "assets/intern.png";
-            else if (mBattleEnemyName == "Manager")     mBattleEnemyTexture = "assets/manager.png";
-            else if (mBattleEnemyName == "Consultant")  mBattleEnemyTexture = "assets/consultant.png";
-            else if (mBattleEnemyName == "CEO")         mBattleEnemyTexture = "assets/boss.png";
-            else                                        mBattleEnemyTexture = "assets/intern.png";
+            mBattleEnemyIndices[mBattleEnemyIndexCount++] = i;
+            mBattleEnemyName = mEnemies[i].getName();
+            mBattleEnemyHP += mEnemies[i].getHP();
+            mBattleEnemyDamage += (int)mEnemies[i].getDamage();
+            mBattleEnemyTextures[0] = getTextureFromEnemyName(mEnemies[i].getName());
+
+            // Pull in nearby enemies to create mixed multi-enemy encounters
+            // (disabled on Level 1 for a gentler intro floor).
+            if (mLevelType != LEVEL_1)
+            {
+                for (int j = 0; j < mEnemyCount && mBattleEnemyIndexCount < 3; j++)
+                {
+                    if (j == i || !mEnemies[j].isActive()) continue;
+
+                    float groupDist = Vector2Distance(mEnemies[i].getPosition(), mEnemies[j].getPosition());
+                    if (groupDist <= TILE * 2.25f)
+                    {
+                        int slot = mBattleEnemyIndexCount;
+                        mBattleEnemyIndices[slot] = j;
+                        mBattleEnemyTextures[slot] = getTextureFromEnemyName(mEnemies[j].getName());
+                        mBattleEnemyIndexCount++;
+                        mBattleEnemyName += " + " + mEnemies[j].getName();
+                        mBattleEnemyHP += mEnemies[j].getHP();
+                        mBattleEnemyDamage += (int)mEnemies[j].getDamage();
+                    }
+                }
+            }
+
+            mBattleEnemyTexture = mBattleEnemyTextures[0];
 
             // Push player away so they don't immediately re-trigger
             Vector2 diff = Vector2Subtract(mPlayer->getPosition(), mEnemies[i].getPosition());
@@ -357,8 +402,7 @@ void LevelScene::update(float deltaTime)
     checkPickupCollisions();
     checkElevatorCollision();
 
-    Vector2 pp = mPlayer->getPosition();
-    panCamera(&mCamera, &pp);
+    mCamera.target = mPlayer->getPosition();
 }
 
 // ============================================================
@@ -437,7 +481,10 @@ void LevelScene::renderCallStack()
         DrawRectangle(px, py+i*sh, sw, sh-2, bg);
         if (i==0) DrawText(">", px+4, py+i*sh+4, 14, YELLOW);
         DrawText(mCallStack[i].name, px+18, py+i*sh+4, 12, tc);
-        DrawText(mCallStack[i].consumable ? "(1x)" : "(reuse)", px+18, py+i*sh+20, 9, GRAY);
+        char ebuf[32];
+        if (mCallStack[i].energy < 0) snprintf(ebuf, sizeof(ebuf), "E:∞  C:%d", mCallStack[i].turnCost);
+        else snprintf(ebuf, sizeof(ebuf), "E:%d/%d C:%d", mCallStack[i].energy, mCallStack[i].maxEnergy, mCallStack[i].turnCost);
+        DrawText(ebuf, px+18, py+i*sh+20, 9, GRAY);
     }
     if (mStackSize==0) DrawText("(empty)", px+18, py+4, 12, DARKGRAY);
 }
