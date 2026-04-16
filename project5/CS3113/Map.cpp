@@ -38,6 +38,9 @@ void Map::build()
 
 void Map::render()
 {
+    const Color floorA = {20, 22, 42, 255};
+    const Color floorB = {24, 26, 48, 255};
+
     // Draw each tile in the map
     for (int row = 0; row < mMapRows; row++)
     {
@@ -47,9 +50,6 @@ void Map::render()
             // Get the tile index at the current row and column
             int tile = mLevelData[row * mMapColumns + col];
 
-            // If the tile index is 0, we do not draw anything
-            if (tile == 0) continue;
-
             Rectangle destinationArea = {
                 mLeftBoundary + col * mTileSize,
                 mTopBoundary  + row * mTileSize, // y-axis is inverted
@@ -57,7 +57,13 @@ void Map::render()
                 mTileSize
             };
 
+            // Draw a visible floor tile even for walkable spaces.
+            DrawRectangle(destinationArea.x, destinationArea.y,
+                          destinationArea.width, destinationArea.height,
+                          ((row + col) % 2 == 0) ? floorA : floorB);
+
             // Draw the tile
+            if (tile == 0) continue;
             DrawTexturePro(
                 mTextureAtlas,
                 mTextureAreas[tile - 1], // -1 because tile indices start at 1
