@@ -2,11 +2,11 @@
 
 static const Ability ABILITY_DEFS[] = {
     { ABILITY_PINK_SLIP,    "Pink Slip",    "Fire projectile (1 dmg)", -1, -1, 1 },
-    { ABILITY_REPLY_ALL,    "Reply All",    "Heavy hit (3 dmg)",        4,  4, 2 },
-    { ABILITY_COFFEE_BREAK, "Coffee Break", "Heal 30 HP",               3,  3, 2 },
+    { ABILITY_REPLY_ALL,    "Reply All",    "Heavy hit (3 dmg)",       -1, -1, 1 },
+    { ABILITY_COFFEE_BREAK, "Coffee Break", "Heal 30 HP",              -1, -1, 1 },
     { ABILITY_REFACTOR,     "Refactor",     "Swap top two abilities",  -1, -1, 1 },
-    { ABILITY_CRUNCH_TIME,  "Crunch Time",  "2x dmg next, lose 15 HP",  2,  2, 2 },
-    { ABILITY_PTO_REQUEST,  "PTO Request",  "Block next enemy attack",  2,  2, 2 },
+    { ABILITY_CRUNCH_TIME,  "Crunch Time",  "2x dmg next, lose 15 HP", -1, -1, 1 },
+    { ABILITY_PTO_REQUEST,  "PTO Request",  "Block next enemy attack", -1, -1, 1 },
 };
 
 Ability makeAbility(AbilityType t)
@@ -51,24 +51,15 @@ void BattleScene::setPlayerData(int hp, int maxHP, Ability *stack, int stackSize
 void BattleScene::setEnemyData(const std::string &name, int hp, int damage,
                                 const char **texturePaths, int enemyCount, int enemyIndex)
 {
+    (void)enemyCount;
     mEnemyName = name;
     mEnemyHP = hp;
     mEnemyMaxHP = hp;
     mEnemyDamage = damage;
-    mEnemyGroupCount = enemyCount < 1 ? 1 : (enemyCount > 3 ? 3 : enemyCount);
 
-    for (int i = 0; i < 3; i++) {
-        if (mEnemyGroupTex[i].id != 0) {
-            UnloadTexture(mEnemyGroupTex[i]);
-            mEnemyGroupTex[i] = {0};
-        }
-    }
-
-    for (int i = 0; i < mEnemyGroupCount; i++) {
-        const char *path = texturePaths[i] ? texturePaths[i] : "assets/intern.png";
-        mEnemyGroupTex[i] = LoadTexture(path);
-    }
-    mEnemyTex = mEnemyGroupTex[0];
+    if (mEnemyTex.id != 0) UnloadTexture(mEnemyTex);
+    const char *path = texturePaths[0] ? texturePaths[0] : "assets/intern.png";
+    mEnemyTex = LoadTexture(path);
     mEnemyIndex = enemyIndex;
 }
 
@@ -85,10 +76,12 @@ void BattleScene::processInput()
 {
     if (mTurn == PLAYER_CHOOSING && mStackSize > 0)
     {
+        int visibleSlots = mStackSize < 3 ? mStackSize : 3;
+
         if (IsKeyPressed(KEY_UP)   || IsKeyPressed(KEY_W))
-            mCursorPos = (mCursorPos - 1 + mStackSize) % mStackSize;
+            mCursorPos = (mCursorPos - 1 + visibleSlots) % visibleSlots;
         if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S))
-            mCursorPos = (mCursorPos + 1) % mStackSize;
+            mCursorPos = (mCursorPos + 1) % visibleSlots;
         if (IsKeyPressed(KEY_R)) {
             if (mStackSize >= 2) {
                 Ability tmp = mStack[0]; mStack[0] = mStack[1]; mStack[1] = tmp;
@@ -116,7 +109,8 @@ void BattleScene::processInput()
 
 bool BattleScene::hasUsableAbility() const
 {
-    for (int i = 0; i < mStackSize; i++) {
+    int visibleSlots = mStackSize < 3 ? mStackSize : 3;
+    for (int i = 0; i < visibleSlots; i++) {
         const Ability &a = mStack[i];
         bool hasItemEnergy = (a.energy == -1) || (a.energy > 0);
         if (hasItemEnergy && a.turnCost <= mTurnEnergy) return true;
@@ -140,7 +134,6 @@ void BattleScene::executeAbility(int index)
     }
 
     mTurnEnergy -= used.turnCost;
-    if (used.energy > 0) used.energy--;
 
     switch (used.type)
     {
@@ -192,12 +185,10 @@ void BattleScene::executeAbility(int index)
         }
     }
 
-    if (index == 0)
-    {
-        Ability first = mStack[0];
-        for (int i = 0; i < mStackSize - 1; i++) mStack[i] = mStack[i+1];
-        mStack[mStackSize - 1] = first;
-    }
+    // Always cycle used ability to the bottom to emphasize stack behavior.
+    Ability moved = mStack[index];
+    for (int i = index; i < mStackSize - 1; i++) mStack[i] = mStack[i+1];
+    mStack[mStackSize - 1] = moved;
 
     if (used.type != ABILITY_CRUNCH_TIME && mCrunchActive) {
         mCrunchActive = false;
@@ -315,21 +306,15 @@ void BattleScene::render()
     renderHP(80, sh/2 - 98, 160, mPlayerHP, mPlayerMaxHP, GREEN);
 
     float enemyScale = 2.5f;
-    float groupWidth = mEnemyGroupCount * (64 * enemyScale + 12);
-    float startX = sw - 180 - groupWidth;
-    for (int i = 0; i < mEnemyGroupCount; i++) {
-        Texture2D tex = mEnemyGroupTex[i];
-        float ex = startX + i * (64 * enemyScale + 12) + (mShakeTimer > 0 ? sx : 0);
-        float ey = (float)(sh/2 - 84) + (mShakeTimer > 0 ? sy : 0);
-        Rectangle eDst = { ex, ey, 64*enemyScale, 64*enemyScale };
-
-        if (tex.id != 0) {
-            Rectangle eSrc = { 0, 0, (float)tex.width, (float)tex.height };
-            DrawTexturePro(tex, eSrc, eDst, {0,0}, 0, WHITE);
-        } else {
-            DrawRectangle(ex, ey, eDst.width, eDst.height, (Color){120, 60, 60, 255});
-            DrawText("ENEMY", ex + 24, ey + 64, 20, WHITE);
-        }
+    float ex = sw - 360 + (mShakeTimer > 0 ? sx : 0);
+    float ey = (float)(sh/2 - 84) + (mShakeTimer > 0 ? sy : 0);
+    Rectangle eDst = { ex, ey, 64*enemyScale, 64*enemyScale };
+    if (mEnemyTex.id != 0) {
+        Rectangle eSrc = { 0, 0, (float)mEnemyTex.width, (float)mEnemyTex.height };
+        DrawTexturePro(mEnemyTex, eSrc, eDst, {0,0}, 0, WHITE);
+    } else {
+        DrawRectangle(ex, ey, eDst.width, eDst.height, (Color){120, 60, 60, 255});
+        DrawText("ENEMY", ex + 24, ey + 64, 20, WHITE);
     }
 
     if (mHitFlashTimer > 0) {
@@ -353,8 +338,9 @@ void BattleScene::render()
 
     int slotH = 36;
     int startY = menuY + 30;
+    int visibleSlots = mStackSize < 3 ? mStackSize : 3;
 
-    for (int i = 0; i < mStackSize; i++)
+    for (int i = 0; i < visibleSlots; i++)
     {
         bool selected = (i == mCursorPos && mTurn == PLAYER_CHOOSING);
         Color bg = selected ? (Color){60, 80, 160, 255} : (Color){50, 50, 65, 255};
@@ -368,8 +354,7 @@ void BattleScene::render()
         DrawText(mStack[i].desc, menuX + 28, startY + i * slotH + 20, 10, GRAY);
 
         char tag[32];
-        if (mStack[i].energy < 0) snprintf(tag, sizeof(tag), "E:∞ C:%d", mStack[i].turnCost);
-        else snprintf(tag, sizeof(tag), "E:%d C:%d", mStack[i].energy, mStack[i].turnCost);
+        snprintf(tag, sizeof(tag), "E:∞ C:%d", mStack[i].turnCost);
         DrawText(tag, menuX + menuW - 84, startY + i * slotH + 6, 10, (Color){120, 120, 140, 255});
     }
 
@@ -377,8 +362,8 @@ void BattleScene::render()
         DrawText("Stack empty!", menuX + 28, startY + 4, 14, RED);
 
     if (mTurn == PLAYER_CHOOSING) {
-        char tbuf[64];
-        snprintf(tbuf, sizeof(tbuf), "Your turn! Energy: %d/%d", mTurnEnergy, MAX_TURN_ENERGY);
+        char tbuf[84];
+        snprintf(tbuf, sizeof(tbuf), "Your turn! Energy: %d/%d (Top 3 stack slots)", mTurnEnergy, MAX_TURN_ENERGY);
         DrawText(tbuf, 30, panelY + 40, 14, YELLOW);
     }
     else if (mTurn == ENEMY_ACTING)
@@ -391,11 +376,8 @@ void BattleScene::render()
 
 void BattleScene::shutdown()
 {
-    for (int i = 0; i < 3; i++) {
-        if (mEnemyGroupTex[i].id != 0) {
-            UnloadTexture(mEnemyGroupTex[i]);
-            mEnemyGroupTex[i] = {0};
-        }
+    if (mEnemyTex.id != 0) {
+        UnloadTexture(mEnemyTex);
+        mEnemyTex = {0};
     }
-    mEnemyTex = {0};
 }

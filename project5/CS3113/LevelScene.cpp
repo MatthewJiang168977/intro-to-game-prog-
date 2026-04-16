@@ -302,6 +302,8 @@ void LevelScene::checkEnemyEncounters()
             mBattleEnemyHP += mEnemies[i].getHP();
             mBattleEnemyDamage += (int)mEnemies[i].getDamage();
             mBattleEnemyTextures[0] = getTextureFromEnemyName(mEnemies[i].getName());
+            int strongestScore = mEnemies[i].getHP() + (int)mEnemies[i].getDamage();
+            const char *strongestTexture = mBattleEnemyTextures[0];
 
             // Pull in nearby enemies to create mixed multi-enemy encounters
             // (disabled on Level 1 for a gentler intro floor).
@@ -321,11 +323,18 @@ void LevelScene::checkEnemyEncounters()
                         mBattleEnemyName += " + " + mEnemies[j].getName();
                         mBattleEnemyHP += mEnemies[j].getHP();
                         mBattleEnemyDamage += (int)mEnemies[j].getDamage();
+
+                        int score = mEnemies[j].getHP() + (int)mEnemies[j].getDamage();
+                        if (score > strongestScore) {
+                            strongestScore = score;
+                            strongestTexture = mBattleEnemyTextures[slot];
+                        }
                     }
                 }
             }
 
-            mBattleEnemyTexture = mBattleEnemyTextures[0];
+            mBattleEnemyTexture = strongestTexture;
+            mBattleEnemyTextures[0] = strongestTexture;
 
             // Push player away so they don't immediately re-trigger
             Vector2 diff = Vector2Subtract(mPlayer->getPosition(), mEnemies[i].getPosition());
