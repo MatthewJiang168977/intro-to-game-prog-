@@ -1,16 +1,18 @@
 #version 330
 
 uniform sampler2D texture0;
+uniform vec4 colDiffuse;
 uniform float hp_ratio; // 0.0 to 1.0
 
 in vec2 fragTexCoord;
-in vec2 fragPosition;
+in vec4 fragColor;
 
 out vec4 finalColor;
 
 void main()
 {
-    vec4 color = texture(texture0, fragTexCoord);
+    vec4 texelColor = texture(texture0, fragTexCoord);
+    vec4 color = texelColor * colDiffuse * fragColor;
 
     // Convert to grayscale
     float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));

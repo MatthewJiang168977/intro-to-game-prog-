@@ -44,8 +44,8 @@ public:
     // Set up before battle starts
     void setPlayerData(int hp, int maxHP, Ability *stack, int stackSize, 
                        Texture2D playerTex);
-    void setEnemyData(const std::string &name, int hp, int damage, 
-                      const char *texturePath, int enemyIndex);
+    void setEnemyData(const std::string &name, int hp, int damage,
+                      const char **texturePaths, int enemyCount, int enemyIndex);
 
     // Get results after battle
     BattleResult getResult() const { return mResult; }
@@ -67,6 +67,8 @@ private:
     std::string mEnemyName;
     int mEnemyHP, mEnemyMaxHP, mEnemyDamage;
     Texture2D mEnemyTex;
+    Texture2D mEnemyGroupTex[3] = {{0}, {0}, {0}};
+    int mEnemyGroupCount = 1;
     int mEnemyIndex; // index in exploration map enemy array
 
     // Battle flow

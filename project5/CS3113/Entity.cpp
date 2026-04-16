@@ -1,4 +1,5 @@
 #include "Entity.h"
+#include <utility>
 
 Entity::Entity() : mPosition{0,0}, mMovement{0,0}, mVelocity{0,0}, mAcceleration{0,0},
     mScale{DEFAULT_SIZE, DEFAULT_SIZE}, mColliderDimensions{DEFAULT_SIZE, DEFAULT_SIZE},
@@ -25,7 +26,60 @@ Entity::Entity(Vector2 position, Vector2 scale, const char *textureFilepath,
     mFrameSpeed{DEFAULT_FRAME_SPEED}, mAngle{0}, mSpeed{DEFAULT_SPEED},
     mEntityType{entityType}, mAIType{WANDERER}, mAIState{IDLE}, mHP{0}, mMaxHP{0} {}
 
-Entity::~Entity() { UnloadTexture(mTexture); }
+Entity::Entity(Entity&& other) noexcept
+{
+    *this = std::move(other);
+}
+
+Entity& Entity::operator=(Entity&& other) noexcept
+{
+    if (this == &other) return *this;
+
+    if (mTexture.id != 0) UnloadTexture(mTexture);
+
+    mPosition = other.mPosition;
+    mMovement = other.mMovement;
+    mVelocity = other.mVelocity;
+    mAcceleration = other.mAcceleration;
+    mScale = other.mScale;
+    mColliderDimensions = other.mColliderDimensions;
+    mTexture = other.mTexture;
+    mTextureType = other.mTextureType;
+    mSpriteSheetDimensions = other.mSpriteSheetDimensions;
+    mAnimationAtlas = std::move(other.mAnimationAtlas);
+    mAnimationIndices = std::move(other.mAnimationIndices);
+    mDirection = other.mDirection;
+    mFrameSpeed = other.mFrameSpeed;
+    mCurrentFrameIndex = other.mCurrentFrameIndex;
+    mAnimationTime = other.mAnimationTime;
+    mIsJumping = other.mIsJumping;
+    mJumpingPower = other.mJumpingPower;
+    mSpeed = other.mSpeed;
+    mAngle = other.mAngle;
+    mIsCollidingTop = other.mIsCollidingTop;
+    mIsCollidingBottom = other.mIsCollidingBottom;
+    mIsCollidingRight = other.mIsCollidingRight;
+    mIsCollidingLeft = other.mIsCollidingLeft;
+    mEntityStatus = other.mEntityStatus;
+    mEntityType = other.mEntityType;
+    mAIType = other.mAIType;
+    mAIState = other.mAIState;
+    mHP = other.mHP;
+    mMaxHP = other.mMaxHP;
+    mDamage = other.mDamage;
+    mFlashTimer = other.mFlashTimer;
+    mLifetime = other.mLifetime;
+    mWaypoints = std::move(other.mWaypoints);
+    mCurrentWaypoint = other.mCurrentWaypoint;
+    mCooldownTimer = other.mCooldownTimer;
+    mCooldownDuration = other.mCooldownDuration;
+    mName = std::move(other.mName);
+
+    other.mTexture = {0};
+    return *this;
+}
+
+Entity::~Entity() { if (mTexture.id != 0) UnloadTexture(mTexture); }
 
 void Entity::takeDamage(int amount)
 {
