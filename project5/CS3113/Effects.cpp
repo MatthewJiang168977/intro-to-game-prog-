@@ -46,19 +46,21 @@ void Effects::start(EffectType effectType)
     switch (mCurrentEffect)
     {
         case FADEIN:
-            // TODO: Set mAlpha to its starting value for a fade-in
+            mAlpha = SOLID;
             break;
 
         case FADEOUT:
-            // TODO: Set mAlpha to its starting value for a fade-out
+            mAlpha = TRANSPARENT;
             break;
 
         case SHRINK:
-            // TODO: Set overlay dimensions to their starting values for a shrink
+            mOverlayWidth  = mMaxWindowDimensions.x;
+            mOverlayHeight = mMaxWindowDimensions.y;
             break;
 
         case GROW:
-            // TODO: Set overlay dimensions to their starting values for a grow
+            mOverlayWidth  = 0.0f;
+            mOverlayHeight = 0.0f;
             break;
 
         case NONE:
@@ -76,25 +78,44 @@ void Effects::update(float deltaTime, Vector2 *viewOffset)
     switch (mCurrentEffect)
     {
         case FADEIN:
-            // TODO: Decrease mAlpha over time using mEffectSpeed and deltaTime.
-            //       Once it reaches TRANSPARENT, clamp it and set mCurrentEffect to NONE.
+            mAlpha -= mEffectSpeed * deltaTime;
+            if (mAlpha <= TRANSPARENT)
+            {
+                mAlpha = TRANSPARENT;
+                mCurrentEffect = NONE;
+            }
             break;
 
         case FADEOUT:
-            // TODO: Increase mAlpha over time using mEffectSpeed and deltaTime.
-            //       Once it reaches SOLID, clamp it and set mCurrentEffect to NONE.
+            mAlpha += mEffectSpeed * deltaTime;
+            if (mAlpha >= SOLID)
+            {
+                mAlpha = SOLID;
+                mCurrentEffect = NONE;
+            }
             break;
 
         case SHRINK:
-            // TODO: Decrease mOverlayWidth and mOverlayHeight over time.
-            //       Use SIZE_SPEED_MULTIPLIER and diagonalRatio to keep the shrink uniform.
-            //       Once either dimension reaches 0, clamp both to 0 and set mCurrentEffect to NONE.
+            mOverlayWidth  -= mEffectSpeed * SIZE_SPEED_MULTIPLIER * deltaTime;
+            mOverlayHeight -= mEffectSpeed * SIZE_SPEED_MULTIPLIER * diagonalRatio * deltaTime;
+            if (mOverlayWidth <= 0.0f || mOverlayHeight <= 0.0f)
+            {
+                mOverlayWidth = 0.0f;
+                mOverlayHeight = 0.0f;
+                mCurrentEffect = NONE;
+            }
             break;
 
         case GROW:
-            // TODO: Increase mOverlayWidth and mOverlayHeight over time.
-            //       Use SIZE_SPEED_MULTIPLIER and diagonalRatio to keep the growth uniform.
-            //       Once either dimension reaches its max, clamp both and set mCurrentEffect to NONE.
+            mOverlayWidth  += mEffectSpeed * SIZE_SPEED_MULTIPLIER * deltaTime;
+            mOverlayHeight += mEffectSpeed * SIZE_SPEED_MULTIPLIER * diagonalRatio * deltaTime;
+            if (mOverlayWidth >= mMaxWindowDimensions.x ||
+                mOverlayHeight >= mMaxWindowDimensions.y)
+            {
+                mOverlayWidth = mMaxWindowDimensions.x;
+                mOverlayHeight = mMaxWindowDimensions.y;
+                mCurrentEffect = NONE;
+            }
             break;
 
         case NONE:
