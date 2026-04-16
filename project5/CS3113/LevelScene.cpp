@@ -13,7 +13,7 @@ constexpr unsigned int PR = 7;  // printer
 
 constexpr int   LVL_W = 24;
 constexpr int   LVL_H = 18;
-constexpr float TILE  = 48.0f;
+constexpr float TILE  = 72.0f;
 
 // Ninja Adventure style anim: row0=down, row1=left, row2=right, row3=up
 static std::map<Direction, std::vector<int>> makeAnim4x4()

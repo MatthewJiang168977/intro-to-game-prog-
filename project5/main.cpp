@@ -15,8 +15,8 @@
 // ============================================================
 //  Constants
 // ============================================================
-constexpr int SCREEN_WIDTH  = 1000,
-              SCREEN_HEIGHT = 600,
+constexpr int SCREEN_WIDTH  = 1400,
+              SCREEN_HEIGHT = 900,
               FPS           = 120;
 
 constexpr Vector2 ORIGIN = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
