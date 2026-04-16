@@ -32,6 +32,8 @@ void BattleScene::initialise()
     mInvincibleNextTurn = false;
     mBattleLog = "A wild " + mEnemyName + " appeared!";
     mShouldTransition = false;
+    for (int i = 0; i < 3; i++) mEnemyGroupTex[i] = {0};
+    mEnemyGroupCount = 1;
 }
 
 void BattleScene::setPlayerData(int hp, int maxHP, Ability *stack, int stackSize,
@@ -45,13 +47,19 @@ void BattleScene::setPlayerData(int hp, int maxHP, Ability *stack, int stackSize
 }
 
 void BattleScene::setEnemyData(const std::string &name, int hp, int damage,
-                                const char *texturePath, int enemyIndex)
+                                const char **texturePaths, int enemyCount, int enemyIndex)
 {
     mEnemyName = name;
     mEnemyHP = hp;
     mEnemyMaxHP = hp;
     mEnemyDamage = damage;
-    mEnemyTex = LoadTexture(texturePath);
+    mEnemyGroupCount = enemyCount < 1 ? 1 : (enemyCount > 3 ? 3 : enemyCount);
+
+    for (int i = 0; i < mEnemyGroupCount; i++) {
+        const char *path = texturePaths[i] ? texturePaths[i] : "assets/intern.png";
+        mEnemyGroupTex[i] = LoadTexture(path);
+    }
+    mEnemyTex = mEnemyGroupTex[0];
     mEnemyIndex = enemyIndex;
 }
 
@@ -269,12 +277,14 @@ void BattleScene::render()
         sy = (float)GetRandomValue(-(int)mShakeAmount, (int)mShakeAmount);
     }
 
-    // Background
-    DrawRectangle(0, 0, sw, sh/2 + 20, (Color){35, 35, 50, 255});       // top half (dark)
-    DrawRectangle(0, sh/2 + 20, sw, sh/2, (Color){25, 25, 35, 255});    // bottom panel
-
-    // Floor line
-    DrawRectangle(0, sh/2 + 16, sw, 4, (Color){80, 80, 100, 255});
+    // Background (office skyline + floor)
+    DrawRectangle(0, 0, sw, sh/2 + 20, (Color){28, 32, 58, 255});
+    DrawRectangle(0, sh/2 + 20, sw, sh/2, (Color){22, 24, 40, 255});
+    for (int x = 0; x < sw; x += 120) {
+        DrawRectangle(x + 24, 36, 72, 130, (Color){40, 48, 80, 180});
+        DrawRectangle(x + 34, 46, 52, 90, (Color){120, 160, 220, 40});
+    }
+    DrawRectangle(0, sh/2 + 16, sw, 4, (Color){90, 95, 130, 255});
 
     // --- Player sprite (left side) ---
     float playerScale = 3.0f;
@@ -286,13 +296,18 @@ void BattleScene::render()
     DrawText("YOU", 80, sh/2 - 120, 18, WHITE);
     renderHP(80, sh/2 - 98, 160, mPlayerHP, mPlayerMaxHP, GREEN);
 
-    // --- Enemy sprite (right side) ---
-    float enemyScale = 3.0f;
-    Rectangle eSrc = { 0, 0, (float)mEnemyTex.width, (float)mEnemyTex.height };
-    float ex = sw - 280 + (mShakeTimer > 0 && mShakeAmount > 6 ? sx : 0);
-    float ey = (float)(sh/2 - 100) + (mShakeTimer > 0 && mShakeAmount > 6 ? sy : 0);
-    Rectangle eDst = { ex, ey, 64*enemyScale, 64*enemyScale };
-    DrawTexturePro(mEnemyTex, eSrc, eDst, {0,0}, 0, WHITE);
+    // --- Enemy sprites (right side) ---
+    float enemyScale = 2.5f;
+    float groupWidth = mEnemyGroupCount * (64 * enemyScale + 12);
+    float startX = sw - 180 - groupWidth;
+    for (int i = 0; i < mEnemyGroupCount; i++) {
+        Texture2D tex = mEnemyGroupTex[i];
+        Rectangle eSrc = { 0, 0, (float)tex.width, (float)tex.height };
+        float ex = startX + i * (64 * enemyScale + 12) + (mShakeTimer > 0 ? sx : 0);
+        float ey = (float)(sh/2 - 84) + (mShakeTimer > 0 ? sy : 0);
+        Rectangle eDst = { ex, ey, 64*enemyScale, 64*enemyScale };
+        DrawTexturePro(tex, eSrc, eDst, {0,0}, 0, WHITE);
+    }
 
     // Enemy info
     DrawText(mEnemyName.c_str(), sw - 320, sh/2 - 140, 18, WHITE);
@@ -350,5 +365,11 @@ void BattleScene::render()
 
 void BattleScene::shutdown()
 {
-    UnloadTexture(mEnemyTex);
+    for (int i = 0; i < 3; i++) {
+        if (mEnemyGroupTex[i].id != 0) {
+            UnloadTexture(mEnemyGroupTex[i]);
+            mEnemyGroupTex[i] = {0};
+        }
+    }
+    mEnemyTex = {0};
 }
