@@ -34,6 +34,8 @@ void BattleScene::initialise()
     mTurnEnergy = MAX_TURN_ENERGY;
     mBattleLog = "A wild " + mEnemyName + " appeared!";
     mShouldTransition = false;
+    for (int i = 0; i < 3; i++) mEnemyGroupTex[i] = {0};
+    mEnemyGroupCount = 1;
 }
 
 void BattleScene::setPlayerData(int hp, int maxHP, Ability *stack, int stackSize,

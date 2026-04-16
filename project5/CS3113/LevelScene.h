@@ -35,7 +35,12 @@ public:
     int  getBattleEnemyHP() const { return mBattleEnemyHP; }
     int  getBattleEnemyDamage() const { return mBattleEnemyDamage; }
     Texture2D getPlayerTexture() const;
-    void clearBattle() { mWantsBattle = false; }
+    void clearBattle()
+    {
+        mWantsBattle = false;
+        mBattleEnemyIndexCount = 0;
+        mBattleEnemyTextures[0] = mBattleEnemyTextures[1] = mBattleEnemyTextures[2] = nullptr;
+    }
 
     // Remove defeated enemy after battle
     void removeEnemy(int index);
