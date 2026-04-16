@@ -18,7 +18,9 @@ struct Ability {
     AbilityType type;
     const char *name;
     const char *desc;
-    bool consumable;
+    int energy;
+    int maxEnergy;
+    int turnCost;
 };
 
 constexpr int MAX_STACK = 6;
@@ -44,8 +46,8 @@ public:
     // Set up before battle starts
     void setPlayerData(int hp, int maxHP, Ability *stack, int stackSize, 
                        Texture2D playerTex);
-    void setEnemyData(const std::string &name, int hp, int damage, 
-                      const char *texturePath, int enemyIndex);
+    void setEnemyData(const std::string &name, int hp, int damage,
+                      const char **texturePaths, int enemyCount, int enemyIndex);
 
     // Get results after battle
     BattleResult getResult() const { return mResult; }
@@ -78,6 +80,9 @@ private:
     float mActionTimer;   // pause between turns for visual feedback
     float mShakeTimer;    // screen shake on hit
     float mShakeAmount;
+    float mHitFlashTimer = 0.0f;
+    int   mTurnEnergy = 0;
+    static constexpr int MAX_TURN_ENERGY = 3;
 
     bool  mCrunchActive;
     float mDamageMultiplier;
@@ -90,6 +95,7 @@ private:
     void executeAbility(int index);
     void enemyAttack();
     void renderHP(int x, int y, int w, int hp, int maxHP, Color col);
+    bool hasUsableAbility() const;
 };
 
 #endif
