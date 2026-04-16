@@ -15,8 +15,8 @@
 // ============================================================
 //  Constants
 // ============================================================
-constexpr int SCREEN_WIDTH  = 1400,
-              SCREEN_HEIGHT = 900,
+constexpr int SCREEN_WIDTH  = 1680,
+              SCREEN_HEIGHT = 1050,
               FPS           = 120;
 
 constexpr Vector2 ORIGIN = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
@@ -118,6 +118,8 @@ void switchToScene(SceneType type)
     }
     case WIN_SCENE: case LOSE_SCENE:
         gEndScreenTimer = 0;
+        gEffects->setCurrentEffect(NONE);
+        gEffects->setAlpha(Effects::TRANSPARENT);
         gCurrentScene = nullptr;
         if (gLevelScene) { gLevelScene->shutdown(); delete gLevelScene; gLevelScene = nullptr; }
         break;
@@ -139,7 +141,8 @@ void returnFromBattle()
 
         gLevelScene->setPlayerHP(gPlayerHP, gPlayerMaxHP);
         gLevelScene->setStack(stack, ss);
-        gLevelScene->removeEnemy(b->getEnemyIndex());
+        // Remove the full encounter group if one was generated.
+        gLevelScene->removeEnemy(-1);
 
         b->shutdown(); delete b;
         gCurrentScene = gLevelScene;
@@ -295,6 +298,12 @@ void render()
 
         // Render effects overlay (fade in/out) — screen space
         gEffects->render();
+    }
+    else
+    {
+        const char *msg = "Scene unavailable. Press ENTER to return to menu.";
+        DrawText(msg, GetScreenWidth()/2 - MeasureText(msg, 24)/2,
+                 GetScreenHeight()/2 - 12, 24, ORANGE);
     }
 
     EndDrawing();
