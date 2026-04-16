@@ -297,6 +297,10 @@ void render()
         if (useShader && gLevelScene) {
             float hpRatio = gLevelScene->getPlayerHPRatio();
             gShader.setFloat("hp_ratio", hpRatio);
+            float levelDarkness = 0.08f;
+            if (gCurrentType == LEVEL_2) levelDarkness = 0.16f;
+            else if (gCurrentType == LEVEL_3) levelDarkness = 0.24f;
+            gShader.setFloat("level_darkness", levelDarkness);
             gShader.begin();
         }
 

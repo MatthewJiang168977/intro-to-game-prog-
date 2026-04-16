@@ -18,7 +18,9 @@ struct Ability {
     AbilityType type;
     const char *name;
     const char *desc;
-    bool consumable;
+    int energy;
+    int maxEnergy;
+    int turnCost;
 };
 
 constexpr int MAX_STACK = 6;
@@ -80,6 +82,9 @@ private:
     float mActionTimer;   // pause between turns for visual feedback
     float mShakeTimer;    // screen shake on hit
     float mShakeAmount;
+    float mHitFlashTimer = 0.0f;
+    int   mTurnEnergy = 0;
+    static constexpr int MAX_TURN_ENERGY = 3;
 
     bool  mCrunchActive;
     float mDamageMultiplier;
@@ -92,6 +97,7 @@ private:
     void executeAbility(int index);
     void enemyAttack();
     void renderHP(int x, int y, int w, int hp, int maxHP, Color col);
+    bool hasUsableAbility() const;
 };
 
 #endif

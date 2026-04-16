@@ -1,12 +1,12 @@
 #include "BattleScene.h"
 
 static const Ability ABILITY_DEFS[] = {
-    { ABILITY_PINK_SLIP,    "Pink Slip",    "Fire projectile (1 dmg)", false },
-    { ABILITY_REPLY_ALL,    "Reply All",    "Heavy hit (3 dmg)",       true  },
-    { ABILITY_COFFEE_BREAK, "Coffee Break", "Heal 30 HP",             true  },
-    { ABILITY_REFACTOR,     "Refactor",     "Swap top two abilities",  false },
-    { ABILITY_CRUNCH_TIME,  "Crunch Time",  "2x dmg next, lose 15 HP",true  },
-    { ABILITY_PTO_REQUEST,  "PTO Request",  "Block next enemy attack", true  },
+    { ABILITY_PINK_SLIP,    "Pink Slip",    "Fire projectile (1 dmg)", -1, -1, 1 },
+    { ABILITY_REPLY_ALL,    "Reply All",    "Heavy hit (3 dmg)",        4,  4, 2 },
+    { ABILITY_COFFEE_BREAK, "Coffee Break", "Heal 30 HP",               3,  3, 2 },
+    { ABILITY_REFACTOR,     "Refactor",     "Swap top two abilities",  -1, -1, 1 },
+    { ABILITY_CRUNCH_TIME,  "Crunch Time",  "2x dmg next, lose 15 HP",  2,  2, 2 },
+    { ABILITY_PTO_REQUEST,  "PTO Request",  "Block next enemy attack",  2,  2, 2 },
 };
 
 Ability makeAbility(AbilityType t)
@@ -27,9 +27,11 @@ void BattleScene::initialise()
     mActionTimer = 0;
     mShakeTimer = 0;
     mShakeAmount = 0;
+    mHitFlashTimer = 0;
     mCrunchActive = false;
     mDamageMultiplier = 1.0f;
     mInvincibleNextTurn = false;
+    mTurnEnergy = MAX_TURN_ENERGY;
     mBattleLog = "A wild " + mEnemyName + " appeared!";
     mShouldTransition = false;
     for (int i = 0; i < 3; i++) mEnemyGroupTex[i] = {0};
@@ -83,12 +85,11 @@ void BattleScene::processInput()
 {
     if (mTurn == PLAYER_CHOOSING && mStackSize > 0)
     {
-        if (IsKeyPressed(KEY_UP)   || IsKeyPressed(KEY_W)) 
+        if (IsKeyPressed(KEY_UP)   || IsKeyPressed(KEY_W))
             mCursorPos = (mCursorPos - 1 + mStackSize) % mStackSize;
-        if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) 
+        if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S))
             mCursorPos = (mCursorPos + 1) % mStackSize;
         if (IsKeyPressed(KEY_R)) {
-            // Quick refactor
             if (mStackSize >= 2) {
                 Ability tmp = mStack[0]; mStack[0] = mStack[1]; mStack[1] = tmp;
                 mBattleLog = "Refactored! Swapped top two abilities.";
@@ -98,7 +99,7 @@ void BattleScene::processInput()
             executeAbility(mCursorPos);
         }
     }
-    
+
     if (mTurn == BATTLE_WON || mTurn == BATTLE_LOST)
     {
         if (IsKeyPressed(KEY_ENTER))
@@ -113,14 +114,33 @@ void BattleScene::processInput()
     }
 }
 
+bool BattleScene::hasUsableAbility() const
+{
+    for (int i = 0; i < mStackSize; i++) {
+        const Ability &a = mStack[i];
+        bool hasItemEnergy = (a.energy == -1) || (a.energy > 0);
+        if (hasItemEnergy && a.turnCost <= mTurnEnergy) return true;
+    }
+    return false;
+}
+
 // ============================================================
 //  Execute ability
 // ============================================================
 void BattleScene::executeAbility(int index)
 {
     if (index >= mStackSize) return;
-    
-    Ability used = mStack[index];
+
+    Ability &used = mStack[index];
+    bool hasItemEnergy = (used.energy == -1) || (used.energy > 0);
+    if (!hasItemEnergy || used.turnCost > mTurnEnergy) {
+        mBattleLog = "Not enough energy for " + std::string(used.name) + "!";
+        if (!hasUsableAbility()) { mTurn = ENEMY_ACTING; mActionTimer = 0.8f; }
+        return;
+    }
+
+    mTurnEnergy -= used.turnCost;
+    if (used.energy > 0) used.energy--;
 
     switch (used.type)
     {
@@ -154,9 +174,8 @@ void BattleScene::executeAbility(int index)
                 Ability tmp = mStack[0]; mStack[0] = mStack[1]; mStack[1] = tmp;
             }
             mBattleLog = "Refactored the call stack!";
-            // Refactor doesn't end your turn — let player choose again
             mCursorPos = 0;
-            return;
+            break;
         }
         case ABILITY_CRUNCH_TIME:
         {
@@ -173,22 +192,13 @@ void BattleScene::executeAbility(int index)
         }
     }
 
-    // Consume or cycle
-    if (used.consumable)
+    if (index == 0)
     {
-        for (int i = index; i < mStackSize - 1; i++) mStack[i] = mStack[i+1];
-        mStackSize--;
-        if (mCursorPos >= mStackSize && mStackSize > 0) mCursorPos = mStackSize - 1;
-    }
-    else if (index == 0)
-    {
-        // Cycle top to bottom
         Ability first = mStack[0];
         for (int i = 0; i < mStackSize - 1; i++) mStack[i] = mStack[i+1];
         mStack[mStackSize - 1] = first;
     }
 
-    // Reset crunch after use
     if (used.type != ABILITY_CRUNCH_TIME && mCrunchActive) {
         mCrunchActive = false;
         mDamageMultiplier = 1.0f;
@@ -197,7 +207,6 @@ void BattleScene::executeAbility(int index)
         mBattleLog += " Crunch penalty: -15 HP!";
     }
 
-    // Check enemy death
     if (mEnemyHP <= 0) {
         mEnemyHP = 0;
         mTurn = BATTLE_WON;
@@ -205,7 +214,6 @@ void BattleScene::executeAbility(int index)
         return;
     }
 
-    // Check player death
     if (mPlayerHP <= 0) {
         mPlayerHP = 0;
         mTurn = BATTLE_LOST;
@@ -213,9 +221,13 @@ void BattleScene::executeAbility(int index)
         return;
     }
 
-    // Switch to enemy turn
-    mTurn = ENEMY_ACTING;
-    mActionTimer = 0.8f;
+    if (mTurnEnergy <= 0 || !hasUsableAbility()) {
+        mTurn = ENEMY_ACTING;
+        mActionTimer = 0.8f;
+    } else {
+        mTurn = PLAYER_CHOOSING;
+        mBattleLog += " (" + std::to_string(mTurnEnergy) + " turn energy left)";
+    }
 }
 
 // ============================================================
@@ -231,6 +243,7 @@ void BattleScene::enemyAttack()
         if (dmg < 1) dmg = 1;
         mPlayerHP -= dmg;
         mShakeTimer = 0.2f; mShakeAmount = 6;
+        mHitFlashTimer = 0.18f;
         mBattleLog = mEnemyName + " attacks! " + std::to_string(dmg) + " damage!";
     }
 
@@ -241,6 +254,7 @@ void BattleScene::enemyAttack()
     } else {
         mTurn = PLAYER_CHOOSING;
         mCursorPos = 0;
+        mTurnEnergy = MAX_TURN_ENERGY;
     }
 }
 
@@ -250,6 +264,7 @@ void BattleScene::enemyAttack()
 void BattleScene::update(float deltaTime)
 {
     if (mShakeTimer > 0) mShakeTimer -= deltaTime;
+    if (mHitFlashTimer > 0) mHitFlashTimer -= deltaTime;
 
     if (mTurn == ENEMY_ACTING) {
         mActionTimer -= deltaTime;
@@ -277,14 +292,12 @@ void BattleScene::render()
 {
     int sw = GetScreenWidth(), sh = GetScreenHeight();
 
-    // Shake offset
     float sx = 0, sy = 0;
     if (mShakeTimer > 0) {
         sx = (float)GetRandomValue(-(int)mShakeAmount, (int)mShakeAmount);
         sy = (float)GetRandomValue(-(int)mShakeAmount, (int)mShakeAmount);
     }
 
-    // Background (office skyline + floor)
     DrawRectangle(0, 0, sw, sh/2 + 20, (Color){28, 32, 58, 255});
     DrawRectangle(0, sh/2 + 20, sw, sh/2, (Color){22, 24, 40, 255});
     for (int x = 0; x < sw; x += 120) {
@@ -293,17 +306,14 @@ void BattleScene::render()
     }
     DrawRectangle(0, sh/2 + 16, sw, 4, (Color){90, 95, 130, 255});
 
-    // --- Player sprite (left side) ---
     float playerScale = 3.0f;
-    Rectangle pSrc = { 0, 0, 64, 64 }; // first frame, facing down
+    Rectangle pSrc = { 0, 0, 64, 64 };
     Rectangle pDst = { 120 + sx, (float)(sh/2 - 80) + sy, 64*playerScale, 64*playerScale };
     DrawTexturePro(mPlayerTex, pSrc, pDst, {0,0}, 0, WHITE);
 
-    // Player info
     DrawText("YOU", 80, sh/2 - 120, 18, WHITE);
     renderHP(80, sh/2 - 98, 160, mPlayerHP, mPlayerMaxHP, GREEN);
 
-    // --- Enemy sprites (right side) ---
     float enemyScale = 2.5f;
     float groupWidth = mEnemyGroupCount * (64 * enemyScale + 12);
     float startX = sw - 180 - groupWidth;
@@ -322,25 +332,25 @@ void BattleScene::render()
         }
     }
 
-    // Enemy info
+    if (mHitFlashTimer > 0) {
+        float alpha = 0.35f * (mHitFlashTimer / 0.18f);
+        DrawRectangle(0, 0, sw, sh, Fade(RED, alpha));
+    }
+
     DrawText(mEnemyName.c_str(), sw - 320, sh/2 - 140, 18, WHITE);
     renderHP(sw - 320, sh/2 - 118, 160, mEnemyHP, mEnemyMaxHP, RED);
 
-    // --- Bottom panel ---
     int panelY = sh/2 + 30;
-
-    // Battle log
     DrawRectangle(20, panelY, sw/2 - 30, 60, (Color){40, 40, 55, 255});
     DrawText(mBattleLog.c_str(), 30, panelY + 8, 16, WHITE);
 
-    // Call Stack menu
     int menuX = sw/2 + 10;
     int menuY = panelY;
     int menuW = sw/2 - 30;
 
     DrawRectangle(menuX, menuY, menuW, sh - menuY - 20, (Color){40, 40, 55, 255});
     DrawText("CALL STACK", menuX + 10, menuY + 6, 16, YELLOW);
-    
+
     int slotH = 36;
     int startY = menuY + 30;
 
@@ -357,17 +367,20 @@ void BattleScene::render()
         DrawText(mStack[i].name, menuX + 28, startY + i * slotH + 4, 14, tc);
         DrawText(mStack[i].desc, menuX + 28, startY + i * slotH + 20, 10, GRAY);
 
-        const char *tag = mStack[i].consumable ? "[1x]" : "[reuse]";
-        DrawText(tag, menuX + menuW - 50, startY + i * slotH + 6, 10, 
-                (Color){120, 120, 140, 255});
+        char tag[32];
+        if (mStack[i].energy < 0) snprintf(tag, sizeof(tag), "E:∞ C:%d", mStack[i].turnCost);
+        else snprintf(tag, sizeof(tag), "E:%d C:%d", mStack[i].energy, mStack[i].turnCost);
+        DrawText(tag, menuX + menuW - 84, startY + i * slotH + 6, 10, (Color){120, 120, 140, 255});
     }
 
     if (mStackSize == 0)
         DrawText("Stack empty!", menuX + 28, startY + 4, 14, RED);
 
-    // Turn indicator
-    if (mTurn == PLAYER_CHOOSING)
-        DrawText("Your turn! Select an ability.", 30, panelY + 40, 14, YELLOW);
+    if (mTurn == PLAYER_CHOOSING) {
+        char tbuf[64];
+        snprintf(tbuf, sizeof(tbuf), "Your turn! Energy: %d/%d", mTurnEnergy, MAX_TURN_ENERGY);
+        DrawText(tbuf, 30, panelY + 40, 14, YELLOW);
+    }
     else if (mTurn == ENEMY_ACTING)
         DrawText("Enemy is acting...", 30, panelY + 40, 14, RED);
     else if (mTurn == BATTLE_WON)

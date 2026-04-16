@@ -3,6 +3,7 @@
 uniform sampler2D texture0;
 uniform vec4 colDiffuse;
 uniform float hp_ratio; // 0.0 to 1.0
+uniform float level_darkness; // 0.0 to ~0.3
 
 in vec2 fragTexCoord;
 in vec4 fragColor;
@@ -31,6 +32,8 @@ void main()
         color.rgb = mix(color.rgb, grayscale, factor * 0.6);
     }
     // else: full color, no effect
+
+    color.rgb *= (1.0 - level_darkness);
 
     finalColor = color;
 }

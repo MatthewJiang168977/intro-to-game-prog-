@@ -481,7 +481,10 @@ void LevelScene::renderCallStack()
         DrawRectangle(px, py+i*sh, sw, sh-2, bg);
         if (i==0) DrawText(">", px+4, py+i*sh+4, 14, YELLOW);
         DrawText(mCallStack[i].name, px+18, py+i*sh+4, 12, tc);
-        DrawText(mCallStack[i].consumable ? "(1x)" : "(reuse)", px+18, py+i*sh+20, 9, GRAY);
+        char ebuf[32];
+        if (mCallStack[i].energy < 0) snprintf(ebuf, sizeof(ebuf), "E:∞  C:%d", mCallStack[i].turnCost);
+        else snprintf(ebuf, sizeof(ebuf), "E:%d/%d C:%d", mCallStack[i].energy, mCallStack[i].maxEnergy, mCallStack[i].turnCost);
+        DrawText(ebuf, px+18, py+i*sh+20, 9, GRAY);
     }
     if (mStackSize==0) DrawText("(empty)", px+18, py+4, 12, DARKGRAY);
 }
