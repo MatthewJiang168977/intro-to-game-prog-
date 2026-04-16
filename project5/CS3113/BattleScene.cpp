@@ -55,6 +55,13 @@ void BattleScene::setEnemyData(const std::string &name, int hp, int damage,
     mEnemyDamage = damage;
     mEnemyGroupCount = enemyCount < 1 ? 1 : (enemyCount > 3 ? 3 : enemyCount);
 
+    for (int i = 0; i < 3; i++) {
+        if (mEnemyGroupTex[i].id != 0) {
+            UnloadTexture(mEnemyGroupTex[i]);
+            mEnemyGroupTex[i] = {0};
+        }
+    }
+
     for (int i = 0; i < mEnemyGroupCount; i++) {
         const char *path = texturePaths[i] ? texturePaths[i] : "assets/intern.png";
         mEnemyGroupTex[i] = LoadTexture(path);

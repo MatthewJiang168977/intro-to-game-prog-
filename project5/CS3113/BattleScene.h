@@ -67,7 +67,7 @@ private:
     std::string mEnemyName;
     int mEnemyHP, mEnemyMaxHP, mEnemyDamage;
     Texture2D mEnemyTex;
-    Texture2D mEnemyGroupTex[3];
+    Texture2D mEnemyGroupTex[3] = {{0}, {0}, {0}};
     int mEnemyGroupCount = 1;
     int mEnemyIndex; // index in exploration map enemy array
 
