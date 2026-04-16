@@ -357,8 +357,7 @@ void LevelScene::update(float deltaTime)
     checkPickupCollisions();
     checkElevatorCollision();
 
-    Vector2 pp = mPlayer->getPosition();
-    panCamera(&mCamera, &pp);
+    mCamera.target = mPlayer->getPosition();
 }
 
 // ============================================================
