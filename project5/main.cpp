@@ -1,7 +1,7 @@
 /**
-* Author: [Your name here]
+* Author: Matthew Jiang
 * Assignment: STACKOVERFLOW
-* Date due: 2026-04-24, 2:00pm
+* Date due: 04/24/2026, 2:00pm
 * I pledge that I have completed this assignment without
 * collaborating with anyone else, in conformance with the
 * NYU School of Engineering Policies and Procedures on
@@ -15,8 +15,8 @@
 // ============================================================
 //  Constants
 // ============================================================
-constexpr int SCREEN_WIDTH  = 1680,
-              SCREEN_HEIGHT = 1050,
+constexpr int SCREEN_WIDTH  = 3200,
+              SCREEN_HEIGHT = 2100,
               FPS           = 120;
 
 constexpr Vector2 ORIGIN = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
