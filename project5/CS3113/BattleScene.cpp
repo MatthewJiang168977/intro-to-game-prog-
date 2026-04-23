@@ -200,6 +200,7 @@ void BattleScene::executeAbility(int index)
         mEnemyHP = 0;
         mTurn = BATTLE_WON;
         mBattleLog = mEnemyName + " has been FIRED!";
+        if (mVictorySfx.frameCount > 0) PlaySound(mVictorySfx);
         return;
     }
 

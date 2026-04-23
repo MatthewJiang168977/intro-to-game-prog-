@@ -45,7 +45,9 @@ public:
     void shutdown() override;
 
     // Audio injection from main (sounds are owned/unloaded by main)
-    void setSounds(Sound attackSfx, Sound hitSfx) { mAttackSfx = attackSfx; mHitSfx = hitSfx; }
+    void setSounds(Sound attackSfx, Sound hitSfx, Sound victorySfx, Sound defeatSfx)
+    { mAttackSfx = attackSfx; mHitSfx = hitSfx; mVictorySfx = victorySfx; mDefeatSfx = defeatSfx; }
+
 
     // Set up before battle starts
     void setPlayerData(int hp, int maxHP, Ability *stack, int stackSize, 
@@ -100,6 +102,8 @@ private:
     // Sound effects (injected from main, not owned here)
     Sound mAttackSfx = {0};
     Sound mHitSfx    = {0};
+    Sound mVictorySfx = {0};
+    Sound mDefeatSfx  = {0};
 
     // Helpers
     void executeAbility(int index);

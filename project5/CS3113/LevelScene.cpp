@@ -67,14 +67,14 @@ static unsigned int sLevel1[LVL_H * LVL_W] = {
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, P, P, P, 0, 0, 0, 0, 0, 0, 0, 0, P, P, P, 0, 0, 0, 0, 0, W,
-    W, 0, 0, 0, C, D, C, 0, 0, PL, 0, 0, 0, PL, 0, C, D, C, 0, 0, 0, 0, 0, W,
+    W, 0, 0, 0, C, D, C, 0, PL, 0, 0, 0, 0, PL, 0, C, D, C, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, P, P, P, 0, 0, 0, 0, 0, 0, 0, 0, P, P, P, 0, 0, 0, 0, 0, W,
-    W, 0, 0, 0, C, D, C, 0, 0,PL, 0, 0, 0,PL, 0, C, D, C, 0, 0, 0, 0, 0, W,
+    W, 0, 0, 0, C, D, C, 0, PL,0, 0, 0, 0,PL, 0, C, D, C, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, D, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, D, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
@@ -404,9 +404,22 @@ void LevelScene::checkPickupCollisions()
         if (!mPickups[i].isActive()) continue;
         float dist = Vector2Distance(mPlayer->getPosition(), mPickups[i].getPosition());
         if (dist < TILE && IsKeyPressed(KEY_E)) {
-            AbilityType randomAbility = (AbilityType)GetRandomValue(0, 5);
-            pushAbility(randomAbility);
-            mPickups[i].deactivate();
+            // Build list of types not already in stack
+            AbilityType available[6];
+            int count = 0;
+            for (int t = 0; t < 6; t++) {
+                bool found = false;
+                for (int s = 0; s < mStackSize; s++)
+                    if (mCallStack[s].type == (AbilityType)t) { found = true; break; }
+                if (!found) available[count++] = (AbilityType)t;
+            }
+            if (count > 0) {
+                AbilityType pick = available[GetRandomValue(0, count - 1)];
+                pushAbility(pick);
+                mPickups[i].deactivate();
+                if (mPickupSfx.frameCount > 0) PlaySound(mPickupSfx);
+                break;
+            }
         }
     }
 }
@@ -477,7 +490,8 @@ void LevelScene::render()
              (int)(mElevatorPosition.y-5), 10, YELLOW);
 
     for (int i = 0; i < mPickupCount; i++) mPickups[i].render();
-    for (int i = 0; i < mEnemyCount; i++) mEnemies[i].render();
+    for (int i = 0; i < mEnemyCount; i++)
+        if (mEnemies[i].isActive()) mEnemies[i].render();
     mPlayer->render();
 
     EndMode2D();

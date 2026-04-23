@@ -37,9 +37,13 @@ ShaderProgram gShader;
 Effects      *gEffects = nullptr;
 
 // Audio
-Music gBgMusic[3]  = {0};   // index 0=L1, 1=L2, 2=L3
+Music gBgMusic[3]  = {0};   
 Sound gAttackSfx   = {0};
 Sound gHitSfx      = {0};
+Sound gPickupSfx   = {0};
+Sound gVictorySfx  = {0};
+Sound gDefeatSfx   = {0};
+Sound gWinSfx      = {0};
 int   gCurrentMusicIdx = -1;
 
 // Persistent player state
@@ -109,7 +113,7 @@ void switchToScene(SceneType type)
         // Start level-appropriate music
         int musicIdx = (int)(type - LEVEL_1); // 0, 1, or 2
         playLevelMusic(musicIdx);
-
+        gLevelScene->setPickupSound(gPickupSfx);
         // Fade in when entering a new level
         gEffects->start(FADEIN);
         break;
@@ -122,7 +126,7 @@ void switchToScene(SceneType type)
 
         auto *b = new BattleScene();
         b->setReturnScene(gLevelType);
-        b->setSounds(gAttackSfx, gHitSfx);
+        b->setSounds(gAttackSfx, gHitSfx, gVictorySfx, gDefeatSfx);
 
         Ability stack[MAX_STACK]; int ss;
         gLevelScene->getStack(stack, &ss);
@@ -145,13 +149,17 @@ void switchToScene(SceneType type)
         break;
     }
     case WIN_SCENE: case LOSE_SCENE:
+    {
         gEndScreenTimer = 0;
         gEffects->setCurrentEffect(NONE);
         gEffects->setAlpha(Effects::TRANSPARENT);
         gCurrentScene = nullptr;
         playLevelMusic(-1);
+        if (type == WIN_SCENE  && gWinSfx.frameCount > 0)    PlaySound(gWinSfx);
+        if (type == LOSE_SCENE && gDefeatSfx.frameCount > 0) PlaySound(gDefeatSfx);
         if (gLevelScene) { gLevelScene->shutdown(); delete gLevelScene; gLevelScene = nullptr; }
         break;
+    }
     }
 }
 
@@ -207,6 +215,10 @@ void initialise()
     // Load one-shot sound effects
     gAttackSfx = LoadSound("assets/attack.mp3");
     gHitSfx    = LoadSound("assets/hit.mp3");
+    gPickupSfx  = LoadSound("assets/pickup.mp3");
+    gVictorySfx = LoadSound("assets/victory.mp3");
+    gDefeatSfx  = LoadSound("assets/defeat.mp3");
+    gWinSfx     = LoadSound("assets/win.mp3");
 
     // Load shader
     gShader.load("shaders/vertex.glsl", "shaders/fragment.glsl");
@@ -380,6 +392,10 @@ void shutdown()
         if (gBgMusic[i].frameCount > 0) UnloadMusicStream(gBgMusic[i]);
     if (gAttackSfx.frameCount > 0) UnloadSound(gAttackSfx);
     if (gHitSfx.frameCount > 0)    UnloadSound(gHitSfx);
+    if (gPickupSfx.frameCount > 0)  UnloadSound(gPickupSfx);
+    if (gVictorySfx.frameCount > 0) UnloadSound(gVictorySfx);
+    if (gDefeatSfx.frameCount > 0)  UnloadSound(gDefeatSfx);
+    if (gWinSfx.frameCount > 0)     UnloadSound(gWinSfx);
 
     CloseAudioDevice();
     CloseWindow();

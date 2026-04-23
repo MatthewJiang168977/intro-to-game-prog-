@@ -24,6 +24,7 @@ public:
     int  getPlayerMaxHP() const;
     void getStack(Ability *out, int *outSize) const;
     void setStack(Ability *in, int size);
+    void setPickupSound(Sound s) { mPickupSfx = s; }
 
     // Battle encounter info
     bool wantsBattle() const { return mWantsBattle; }
@@ -82,6 +83,8 @@ private:
     const char *mBattleEnemyTextures[3] = {nullptr, nullptr, nullptr};
     int  mBattleEnemyIndices[3] = {-1, -1, -1};
     int  mBattleEnemyIndexCount = 0;
+
+    Sound mPickupSfx = {0};
 
     void setupLevel1();
     void setupLevel2();
