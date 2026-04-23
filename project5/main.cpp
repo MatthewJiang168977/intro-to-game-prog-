@@ -208,7 +208,7 @@ void initialise()
     gAttackSfx = LoadSound("assets/attack.mp3");
     gHitSfx    = LoadSound("assets/hit.mp3");
 
-    // Load shader (professor's pattern)
+    // Load shader
     gShader.load("shaders/vertex.glsl", "shaders/fragment.glsl");
 
     // Effects overlay
