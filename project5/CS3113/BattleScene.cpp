@@ -69,13 +69,7 @@ void BattleScene::getStack(Ability *out, int *outSize) const
     for (int i = 0; i < mStackSize; i++) out[i] = mStack[i];
 }
 
-<<<<<<< HEAD
-
 //  Input
-
-=======
-//  Input
->>>>>>> f64904273135c3f4681f8927eacff853ee8a1acc
 void BattleScene::processInput()
 {
     if (mTurn == PLAYER_CHOOSING && mStackSize > 0)
@@ -122,13 +116,7 @@ bool BattleScene::hasUsableAbility() const
     return false;
 }
 
-<<<<<<< HEAD
-
 //  Execute ability
-
-=======
-//  Execute ability
->>>>>>> f64904273135c3f4681f8927eacff853ee8a1acc
 void BattleScene::executeAbility(int index)
 {
     if (index >= mStackSize) return;
@@ -229,13 +217,7 @@ void BattleScene::executeAbility(int index)
     }
 }
 
-<<<<<<< HEAD
-
 //  Enemy attack
-
-=======
-//  Enemy attack
->>>>>>> f64904273135c3f4681f8927eacff853ee8a1acc
 void BattleScene::enemyAttack()
 {
     if (mInvincibleNextTurn) {
@@ -261,13 +243,7 @@ void BattleScene::enemyAttack()
     }
 }
 
-<<<<<<< HEAD
-
 //  Update
-
-=======
-//  Update
->>>>>>> f64904273135c3f4681f8927eacff853ee8a1acc
 void BattleScene::update(float deltaTime)
 {
     if (mShakeTimer > 0) mShakeTimer -= deltaTime;
@@ -279,13 +255,7 @@ void BattleScene::update(float deltaTime)
     }
 }
 
-<<<<<<< HEAD
-
 //  Render
-
-=======
-//  Render
->>>>>>> f64904273135c3f4681f8927eacff853ee8a1acc
 void BattleScene::renderHP(int x, int y, int w, int hp, int maxHP, Color col)
 {
     DrawRectangle(x, y, w + 4, 18, DARKGRAY);
@@ -354,11 +324,7 @@ void BattleScene::render()
     int menuW = sw/2 - 30;
 
     DrawRectangle(menuX, menuY, menuW, sh - menuY - 20, (Color){40, 40, 55, 255});
-<<<<<<< HEAD
     DrawText("CALL STACK", menuX + 15, menuY + 10, 20, YELLOW);
-=======
-    DrawText("CALL STACK", menuX + 10, menuY + 6, 22, YELLOW);
->>>>>>> f64904273135c3f4681f8927eacff853ee8a1acc
 
     int slotH = 52;
     int startY = menuY + 40;
