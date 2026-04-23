@@ -12,9 +12,7 @@
 #include "CS3113/LevelScene.h"
 #include "CS3113/MenuScene.h"
 
-// ============================================================
 //  Constants
-// ============================================================
 constexpr int SCREEN_WIDTH  = 1680,
               SCREEN_HEIGHT = 1050,
               FPS           = 120;
@@ -22,9 +20,7 @@ constexpr int SCREEN_WIDTH  = 1680,
 constexpr Vector2 ORIGIN = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
 constexpr float   FIXED_TIMESTEP = 1.0f / 60.0f;
 
-// ============================================================
 //  Globals
-// ============================================================
 AppStatus gAppStatus     = RUNNING;
 float     gPreviousTicks = 0.0f,
           gTimeAccumulator = 0.0f;
@@ -45,9 +41,7 @@ Ability gStack[MAX_STACK];
 int     gStackSize = 0;
 float   gEndScreenTimer = 0;
 
-// ============================================================
 //  Scene switching
-// ============================================================
 void switchToScene(SceneType type);
 void returnFromBattle();
 
@@ -98,7 +92,10 @@ void switchToScene(SceneType type)
     }
     case BATTLE_SCENE:
     {
-        // Fade out effect before battle
+        // Clear level fade before battle.
+        gEffects->setCurrentEffect(NONE);
+        gEffects->setAlpha(Effects::TRANSPARENT);
+
         auto *b = new BattleScene();
         b->setReturnScene(gLevelType);
 
@@ -166,9 +163,7 @@ void returnFromBattle()
     }
 }
 
-// ============================================================
 //  Core functions
-// ============================================================
 void initialise()
 {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "STACKOVERFLOW");
@@ -226,13 +221,9 @@ void update()
         {
             gCurrentScene->update(FIXED_TIMESTEP);
 
-            // Update effects overlay position
-            if (gLevelScene && (gCurrentType >= LEVEL_1 && gCurrentType <= LEVEL_3)) {
-                // Camera is managed inside LevelScene::render via BeginMode2D
-                // We just update effects here
-                Vector2 effectTarget = ORIGIN;
-                gEffects->update(FIXED_TIMESTEP, &effectTarget);
-            }
+            // Update effects every frame.
+            Vector2 effectTarget = ORIGIN;
+            gEffects->update(FIXED_TIMESTEP, &effectTarget);
 
             // Check battle trigger
             if (gCurrentType >= LEVEL_1 && gCurrentType <= LEVEL_3 && gLevelScene) {
@@ -307,6 +298,15 @@ void render()
         gCurrentScene->render();
 
         if (useShader) gShader.end();
+
+        // Draw key prompt after shader pass.
+        if (gCurrentType >= LEVEL_1 && gCurrentType <= LEVEL_3
+            && gLevelScene && gLevelScene->shouldShowPickupPrompt()) {
+            int tx = GetScreenWidth()/2 - 120;
+            int ty = GetScreenHeight() - 48;
+            DrawRectangle(tx - 12, ty - 6, 250, 30, (Color){0, 0, 0, 200});
+            DrawText("[E] Pick up ability", tx, ty, 20, YELLOW);
+        }
 
         // Render effects overlay (fade in/out) — screen space
         gEffects->render();
