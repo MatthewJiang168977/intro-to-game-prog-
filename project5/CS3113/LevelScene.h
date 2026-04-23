@@ -47,6 +47,7 @@ public:
 
     // HP ratio for shader (read by main.cpp)
     float getPlayerHPRatio() const;
+    bool  shouldShowPickupPrompt() const;
 
 private:
     SceneType mLevelType;

@@ -1,9 +1,7 @@
 #include "LevelScene.h"
 
-// ============================================================
 //  Tile constants — tileset is 256x128 = 8 cols x 4 rows of 32px
 //  0 = walkable empty, 1+ = tile index (all non-zero are solid)
-// ============================================================
 constexpr unsigned int W  = 25; // grey wall (tile index 25)
 constexpr unsigned int P  = 1;  // partition
 constexpr unsigned int D  = 4;  // desk with PC (obstacle)
@@ -15,6 +13,43 @@ constexpr int   LVL_W = 24;
 constexpr int   LVL_H = 18;
 constexpr float TILE  = 96.0f;
 
+static Vector2 snapToWalkableTile(Vector2 worldPos, const unsigned int *levelData, Vector2 origin)
+{
+    float left = origin.x - (LVL_W * TILE) / 2.0f;
+    float top  = origin.y - (LVL_H * TILE) / 2.0f;
+
+    int col = (int)floor((worldPos.x - left) / TILE);
+    int row = (int)floor((worldPos.y - top) / TILE);
+
+    if (col < 0) col = 0; else if (col >= LVL_W) col = LVL_W - 1;
+    if (row < 0) row = 0; else if (row >= LVL_H) row = LVL_H - 1;
+
+    // Keep valid positions unchanged.
+    if (levelData[row * LVL_W + col] == 0)
+        return worldPos;
+
+    // Find a nearby walkable tile center.
+    for (int radius = 1; radius < 8; radius++)
+    {
+        for (int dy = -radius; dy <= radius; dy++)
+        {
+            for (int dx = -radius; dx <= radius; dx++)
+            {
+                int c = col + dx, r = row + dy;
+                if (c < 0 || c >= LVL_W || r < 0 || r >= LVL_H) continue;
+                if (levelData[r * LVL_W + c] != 0) continue;
+
+                return {
+                    left + c * TILE + TILE * 0.5f,
+                    top + r * TILE + TILE * 0.5f
+                };
+            }
+        }
+    }
+
+    return worldPos;
+}
+
 // Ninja Adventure style anim: row0=down, row1=left, row2=right, row3=up
 static std::map<Direction, std::vector<int>> makeAnim4x4()
 {
@@ -23,9 +58,7 @@ static std::map<Direction, std::vector<int>> makeAnim4x4()
     };
 }
 
-// ============================================================
 //  Level 1 — Cubicle Farm (24x18)
-// ============================================================
 static unsigned int sLevel1[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
@@ -47,9 +80,7 @@ static unsigned int sLevel1[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
 };
 
-// ============================================================
 //  Level 2 — Server Room (tighter corridors)
-// ============================================================
 static unsigned int sLevel2[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
     W, 0, 0, 0, W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W, 0, 0, 0, W,
@@ -71,9 +102,7 @@ static unsigned int sLevel2[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
 };
 
-// ============================================================
 //  Level 3 — Executive Suite (boss arena)
-// ============================================================
 static unsigned int sLevel3[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
@@ -95,9 +124,7 @@ static unsigned int sLevel3[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
 };
 
-// ============================================================
 //  Helper: init enemy
-// ============================================================
 static void initEnemy(Entity &e, Vector2 pos, const char *tex, const std::string &name,
     AIType ai, AIState state, int speed, int hp, float dmg, float tile)
 {
@@ -118,7 +145,6 @@ static const char* getTextureFromEnemyName(const std::string &name)
     return "assets/intern.png";
 }
 
-// ============================================================
 LevelScene::LevelScene(SceneType t) : mLevelType(t) {}
 LevelScene::~LevelScene() { shutdown(); }
 
@@ -166,7 +192,8 @@ void LevelScene::initialise()
     mCamera = {0};
     mCamera.target = mPlayer->getPosition();
     mCamera.offset = {(float)GetScreenWidth()/2, (float)GetScreenHeight()/2};
-    mCamera.zoom = 1.0f;
+    // Exploration camera zoom.
+    mCamera.zoom = 2.0f;
 
     switch (mLevelType) {
         case LEVEL_1: setupLevel1(); break;
@@ -178,8 +205,8 @@ void LevelScene::initialise()
 
 void LevelScene::setupLevel1()
 {
-    Vector2 o = {(LVL_W*TILE)/2, (LVL_H*TILE)/2};
-    mElevatorPosition = {o.x + 8*TILE, o.y - 6*TILE};
+    Vector2 o = {(LVL_W * TILE) / 2.0f, (LVL_H * TILE) / 2.0f};
+    mElevatorPosition = {o.x + 8.0f * TILE, o.y - 6.0f * TILE};
 
     initEnemy(mEnemies[0], {o.x-150, o.y-100}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 90, 4, 8, TILE);
     initEnemy(mEnemies[1], {o.x+200, o.y-200}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 100, 4, 8, TILE);
@@ -195,8 +222,8 @@ void LevelScene::setupLevel1()
 
 void LevelScene::setupLevel2()
 {
-    Vector2 o = {(LVL_W*TILE)/2, (LVL_H*TILE)/2};
-    mElevatorPosition = {o.x + 8*TILE, o.y - 6*TILE};
+    Vector2 o = {(LVL_W * TILE) / 2.0f, (LVL_H * TILE) / 2.0f};
+    mElevatorPosition = {o.x + 7.0f * TILE, o.y - 6.0f * TILE};
 
     initEnemy(mEnemies[0], {o.x-200, o.y}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 110, 5, 10, TILE);
     initEnemy(mEnemies[1], {o.x+200, o.y}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 110, 5, 10, TILE);
@@ -207,35 +234,45 @@ void LevelScene::setupLevel2()
     initEnemy(mEnemies[4], {o.x, o.y+50}, "assets/consultant.png", "Consultant", DISRUPTOR, IDLE, 130, 7, 12, TILE);
     mEnemyCount = 5;
 
+    for (int i = 0; i < mEnemyCount; i++)
+        mEnemies[i].setPosition(snapToWalkableTile(mEnemies[i].getPosition(), mLevelData, o));
+
+    mElevatorPosition = snapToWalkableTile(mElevatorPosition, mLevelData, o);
+
     mPickups[0] = Entity({o.x-300, o.y-200}, {TILE*0.6f,TILE*0.6f}, "assets/pickup.png", PICKUP);
+    mPickups[0].setPosition(snapToWalkableTile(mPickups[0].getPosition(), mLevelData, o));
     mPickups[0].setColliderDimensions({TILE*0.4f, TILE*0.4f});
     mPickupCount = 1;
 }
 
 void LevelScene::setupLevel3()
 {
-    Vector2 o = {(LVL_W*TILE)/2, (LVL_H*TILE)/2};
+    Vector2 o = {(LVL_W * TILE) / 2.0f, (LVL_H * TILE) / 2.0f};
     // CEO office is inside the walled room
     mElevatorPosition = {o.x, o.y - TILE};
 
-    initEnemy(mEnemies[0], {o.x-300, o.y-200}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 120, 6, 12, TILE);
-    initEnemy(mEnemies[1], {o.x+300, o.y-200}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 120, 6, 12, TILE);
-    initEnemy(mEnemies[2], {o.x-300, o.y+200}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 120, 6, 12, TILE);
-    initEnemy(mEnemies[3], {o.x+300, o.y+200}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 120, 6, 12, TILE);
-    initEnemy(mEnemies[4], {o.x-150, o.y}, "assets/consultant.png", "Consultant", DISRUPTOR, IDLE, 140, 8, 15, TILE);
-    initEnemy(mEnemies[5], {o.x+150, o.y}, "assets/consultant.png", "Consultant", DISRUPTOR, IDLE, 140, 8, 15, TILE);
+    initEnemy(mEnemies[0], {o.x-350, o.y-340}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 120, 6, 12, TILE);
+    initEnemy(mEnemies[1], {o.x+350, o.y-340}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 120, 6, 12, TILE);
+    initEnemy(mEnemies[2], {o.x-350, o.y+340}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 120, 6, 12, TILE);
+    initEnemy(mEnemies[3], {o.x+350, o.y+340}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 120, 6, 12, TILE);
+    initEnemy(mEnemies[4], {o.x-220, o.y-120}, "assets/consultant.png", "Consultant", DISRUPTOR, IDLE, 140, 8, 15, TILE);
+    initEnemy(mEnemies[5], {o.x+220, o.y+120}, "assets/consultant.png", "Consultant", DISRUPTOR, IDLE, 140, 8, 15, TILE);
     // Boss inside the room
     initEnemy(mEnemies[6], {o.x, o.y-TILE}, "assets/boss.png", "CEO", FOLLOWER, IDLE, 50, 20, 25, TILE);
     mEnemyCount = 7;
 
+    for (int i = 0; i < mEnemyCount; i++)
+        mEnemies[i].setPosition(snapToWalkableTile(mEnemies[i].getPosition(), mLevelData, o));
+
+    mElevatorPosition = snapToWalkableTile(mElevatorPosition, mLevelData, o);
+
     mPickups[0] = Entity({o.x, o.y+300}, {TILE*0.6f,TILE*0.6f}, "assets/pickup.png", PICKUP);
+    mPickups[0].setPosition(snapToWalkableTile(mPickups[0].getPosition(), mLevelData, o));
     mPickups[0].setColliderDimensions({TILE*0.4f, TILE*0.4f});
     mPickupCount = 1;
 }
 
-// ============================================================
 //  Stack operations
-// ============================================================
 void LevelScene::pushAbility(AbilityType type)
 {
     if (mStackSize >= MAX_STACK) return;
@@ -276,9 +313,7 @@ void LevelScene::removeEnemy(int index)
     if (index >= 0 && index < mEnemyCount) mEnemies[index].deactivate();
 }
 
-// ============================================================
 //  Encounter — touch enemy to battle
-// ============================================================
 void LevelScene::checkEnemyEncounters()
 {
     for (int i = 0; i < mEnemyCount; i++)
@@ -355,12 +390,8 @@ void LevelScene::checkPickupCollisions()
         if (!mPickups[i].isActive()) continue;
         float dist = Vector2Distance(mPlayer->getPosition(), mPickups[i].getPosition());
         if (dist < TILE && IsKeyPressed(KEY_E)) {
-            switch (mLevelType) {
-                case LEVEL_1: pushAbility(ABILITY_REPLY_ALL); break;
-                case LEVEL_2: pushAbility(ABILITY_CRUNCH_TIME); break;
-                case LEVEL_3: pushAbility(ABILITY_PTO_REQUEST); break;
-                default: pushAbility(ABILITY_REPLY_ALL); break;
-            }
+            AbilityType randomAbility = (AbilityType)GetRandomValue(0, 5);
+            pushAbility(randomAbility);
             mPickups[i].deactivate();
         }
     }
@@ -386,9 +417,7 @@ int LevelScene::countActiveEnemies()
     return c;
 }
 
-// ============================================================
 //  Input / Update
-// ============================================================
 void LevelScene::processInput()
 {
     mPlayer->resetMovement();
@@ -414,9 +443,7 @@ void LevelScene::update(float deltaTime)
     mCamera.target = mPlayer->getPosition();
 }
 
-// ============================================================
 //  Render
-// ============================================================
 void LevelScene::render()
 {
     // Apply burnout shader if loaded
@@ -464,14 +491,6 @@ void LevelScene::renderHUD()
     char ebuf[32]; snprintf(ebuf, 32, "Enemies: %d", countActiveEnemies());
     DrawText(ebuf, 20, 78, 16, LIGHTGRAY);
 
-    // Pickup hint
-    for (int i = 0; i < mPickupCount; i++) {
-        if (!mPickups[i].isActive()) continue;
-        if (Vector2Distance(mPlayer->getPosition(), mPickups[i].getPosition()) < TILE*1.5f) {
-            DrawText("[E] Pick up ability", GetScreenWidth()/2-80, GetScreenHeight()-40, 18, YELLOW);
-            break;
-        }
-    }
     if (Vector2Distance(mPlayer->getPosition(), mElevatorPosition) < TILE*2) {
         const char *h = (mLevelType==LEVEL_3) ? ">> Confront the CEO >>" : ">> Walk to ELEVATOR >>";
         DrawText(h, GetScreenWidth()/2 - MeasureText(h,16)/2, GetScreenHeight()-60, 16, YELLOW);
@@ -508,4 +527,18 @@ void LevelScene::shutdown()
 float LevelScene::getPlayerHPRatio() const
 {
     return mPlayer ? mPlayer->getHPRatio() : 1.0f;
+}
+
+bool LevelScene::shouldShowPickupPrompt() const
+{
+    if (!mPlayer) return false;
+
+    for (int i = 0; i < mPickupCount; i++)
+    {
+        if (!mPickups[i].isActive()) continue;
+        if (Vector2Distance(mPlayer->getPosition(), mPickups[i].getPosition()) < TILE * 2.5f)
+            return true;
+    }
+
+    return false;
 }
