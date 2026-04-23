@@ -1,9 +1,7 @@
 #include "LevelScene.h"
 
-
 //  Tile constants — tileset is 256x128 = 8 cols x 4 rows of 32px
 //  0 = walkable empty, 1+ = tile index (all non-zero are solid)
-
 constexpr unsigned int W  = 25; // grey wall (tile index 25)
 constexpr unsigned int P  = 1;  // partition
 constexpr unsigned int D  = 4;  // desk with PC (obstacle)
@@ -108,6 +106,7 @@ static unsigned int sLevel2[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
 };
 
+//  Level 3 — Executive Suite (boss arena)
 
 //  Level 3 
 
@@ -405,12 +404,8 @@ void LevelScene::checkPickupCollisions()
         if (!mPickups[i].isActive()) continue;
         float dist = Vector2Distance(mPlayer->getPosition(), mPickups[i].getPosition());
         if (dist < TILE && IsKeyPressed(KEY_E)) {
-            switch (mLevelType) {
-                case LEVEL_1: pushAbility(ABILITY_REPLY_ALL); break;
-                case LEVEL_2: pushAbility(ABILITY_CRUNCH_TIME); break;
-                case LEVEL_3: pushAbility(ABILITY_PTO_REQUEST); break;
-                default: pushAbility(ABILITY_REPLY_ALL); break;
-            }
+            AbilityType randomAbility = (AbilityType)GetRandomValue(0, 5);
+            pushAbility(randomAbility);
             mPickups[i].deactivate();
         }
     }

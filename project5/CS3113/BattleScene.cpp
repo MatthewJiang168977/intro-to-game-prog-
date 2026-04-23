@@ -69,9 +69,13 @@ void BattleScene::getStack(Ability *out, int *outSize) const
     for (int i = 0; i < mStackSize; i++) out[i] = mStack[i];
 }
 
+<<<<<<< HEAD
 
 //  Input
 
+=======
+//  Input
+>>>>>>> f64904273135c3f4681f8927eacff853ee8a1acc
 void BattleScene::processInput()
 {
     if (mTurn == PLAYER_CHOOSING && mStackSize > 0)
@@ -118,9 +122,13 @@ bool BattleScene::hasUsableAbility() const
     return false;
 }
 
+<<<<<<< HEAD
 
 //  Execute ability
 
+=======
+//  Execute ability
+>>>>>>> f64904273135c3f4681f8927eacff853ee8a1acc
 void BattleScene::executeAbility(int index)
 {
     if (index >= mStackSize) return;
@@ -221,9 +229,13 @@ void BattleScene::executeAbility(int index)
     }
 }
 
+<<<<<<< HEAD
 
 //  Enemy attack
 
+=======
+//  Enemy attack
+>>>>>>> f64904273135c3f4681f8927eacff853ee8a1acc
 void BattleScene::enemyAttack()
 {
     if (mInvincibleNextTurn) {
@@ -249,9 +261,13 @@ void BattleScene::enemyAttack()
     }
 }
 
+<<<<<<< HEAD
 
 //  Update
 
+=======
+//  Update
+>>>>>>> f64904273135c3f4681f8927eacff853ee8a1acc
 void BattleScene::update(float deltaTime)
 {
     if (mShakeTimer > 0) mShakeTimer -= deltaTime;
@@ -263,9 +279,13 @@ void BattleScene::update(float deltaTime)
     }
 }
 
+<<<<<<< HEAD
 
 //  Render
 
+=======
+//  Render
+>>>>>>> f64904273135c3f4681f8927eacff853ee8a1acc
 void BattleScene::renderHP(int x, int y, int w, int hp, int maxHP, Color col)
 {
     DrawRectangle(x, y, w + 4, 18, DARKGRAY);
@@ -302,7 +322,7 @@ void BattleScene::render()
     Rectangle pDst = { 120 + sx, (float)(sh/2 - 80) + sy, 64*playerScale, 64*playerScale };
     DrawTexturePro(mPlayerTex, pSrc, pDst, {0,0}, 0, WHITE);
 
-    DrawText("YOU", 80, sh/2 - 120, 18, WHITE);
+    DrawText("YOU", 80, sh/2 - 126, 24, WHITE);
     renderHP(80, sh/2 - 98, 160, mPlayerHP, mPlayerMaxHP, GREEN);
 
     float enemyScale = 2.5f;
@@ -314,7 +334,7 @@ void BattleScene::render()
         DrawTexturePro(mEnemyTex, eSrc, eDst, {0,0}, 0, WHITE);
     } else {
         DrawRectangle(ex, ey, eDst.width, eDst.height, (Color){120, 60, 60, 255});
-        DrawText("ENEMY", ex + 24, ey + 64, 20, WHITE);
+        DrawText("ENEMY", ex + 20, ey + 60, 24, WHITE);
     }
 
     if (mHitFlashTimer > 0) {
@@ -322,22 +342,26 @@ void BattleScene::render()
         DrawRectangle(0, 0, sw, sh, Fade(RED, alpha));
     }
 
-    DrawText(mEnemyName.c_str(), sw - 320, sh/2 - 140, 18, WHITE);
+    DrawText(mEnemyName.c_str(), sw - 320, sh/2 - 146, 24, WHITE);
     renderHP(sw - 320, sh/2 - 118, 160, mEnemyHP, mEnemyMaxHP, RED);
 
     int panelY = sh/2 + 30;
     DrawRectangle(20, panelY, sw/2 - 30, 60, (Color){40, 40, 55, 255});
-    DrawText(mBattleLog.c_str(), 30, panelY + 8, 16, WHITE);
+    DrawText(mBattleLog.c_str(), 30, panelY + 8, 22, WHITE);
 
     int menuX = sw/2 + 10;
     int menuY = panelY;
     int menuW = sw/2 - 30;
 
     DrawRectangle(menuX, menuY, menuW, sh - menuY - 20, (Color){40, 40, 55, 255});
+<<<<<<< HEAD
     DrawText("CALL STACK", menuX + 15, menuY + 10, 20, YELLOW);
+=======
+    DrawText("CALL STACK", menuX + 10, menuY + 6, 22, YELLOW);
+>>>>>>> f64904273135c3f4681f8927eacff853ee8a1acc
 
-    int slotH = 36;
-    int startY = menuY + 30;
+    int slotH = 52;
+    int startY = menuY + 40;
     int visibleSlots = mStackSize < 3 ? mStackSize : 3;
 
     for (int i = 0; i < visibleSlots; i++)
@@ -348,30 +372,30 @@ void BattleScene::render()
 
         DrawRectangle(menuX + 4, startY + i * slotH, menuW - 8, slotH - 2, bg);
 
-        if (selected) DrawText(">", menuX + 8, startY + i * slotH + 4, 16, YELLOW);
+        if (selected) DrawText(">", menuX + 8, startY + i * slotH + 6, 20, YELLOW);
 
-        DrawText(mStack[i].name, menuX + 28, startY + i * slotH + 4, 14, tc);
-        DrawText(mStack[i].desc, menuX + 28, startY + i * slotH + 20, 10, GRAY);
+        DrawText(mStack[i].name, menuX + 28, startY + i * slotH + 6, 20, tc);
+        DrawText(mStack[i].desc, menuX + 28, startY + i * slotH + 28, 14, GRAY);
 
         char tag[32];
         snprintf(tag, sizeof(tag), "E:∞ C:%d", mStack[i].turnCost);
-        DrawText(tag, menuX + menuW - 84, startY + i * slotH + 6, 10, (Color){120, 120, 140, 255});
+        DrawText(tag, menuX + menuW - 118, startY + i * slotH + 10, 14, (Color){120, 120, 140, 255});
     }
 
     if (mStackSize == 0)
-        DrawText("Stack empty!", menuX + 28, startY + 4, 14, RED);
+        DrawText("Stack empty!", menuX + 28, startY + 6, 20, RED);
 
     if (mTurn == PLAYER_CHOOSING) {
         char tbuf[84];
         snprintf(tbuf, sizeof(tbuf), "Your turn! Energy: %d/%d (Top 3 stack slots)", mTurnEnergy, MAX_TURN_ENERGY);
-        DrawText(tbuf, 30, panelY + 40, 14, YELLOW);
+        DrawText(tbuf, 30, panelY + 38, 18, YELLOW);
     }
     else if (mTurn == ENEMY_ACTING)
-        DrawText("Enemy is acting...", 30, panelY + 40, 14, RED);
+        DrawText("Enemy is acting...", 30, panelY + 38, 18, RED);
     else if (mTurn == BATTLE_WON)
-        DrawText("Press ENTER to continue", 30, panelY + 40, 14, GREEN);
+        DrawText("Press ENTER to continue", 30, panelY + 38, 18, GREEN);
     else if (mTurn == BATTLE_LOST)
-        DrawText("Press ENTER to continue", 30, panelY + 40, 14, RED);
+        DrawText("Press ENTER to continue", 30, panelY + 38, 18, RED);
 }
 
 void BattleScene::shutdown()

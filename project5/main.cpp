@@ -12,7 +12,6 @@
 #include "CS3113/LevelScene.h"
 #include "CS3113/MenuScene.h"
 
-// ============================================================
 //  Constants
 // ============================================================
 constexpr int SCREEN_WIDTH  = 3200,
@@ -22,9 +21,7 @@ constexpr int SCREEN_WIDTH  = 3200,
 constexpr Vector2 ORIGIN = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
 constexpr float   FIXED_TIMESTEP = 1.0f / 60.0f;
 
-// ============================================================
 //  Globals
-// ============================================================
 AppStatus gAppStatus     = RUNNING;
 float     gPreviousTicks = 0.0f,
           gTimeAccumulator = 0.0f;
@@ -45,9 +42,7 @@ Ability gStack[MAX_STACK];
 int     gStackSize = 0;
 float   gEndScreenTimer = 0;
 
-// ============================================================
 //  Scene switching
-// ============================================================
 void switchToScene(SceneType type);
 void returnFromBattle();
 
@@ -169,9 +164,7 @@ void returnFromBattle()
     }
 }
 
-// ============================================================
 //  Core functions
-// ============================================================
 void initialise()
 {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "STACKOVERFLOW");
@@ -230,7 +223,6 @@ void update()
             gCurrentScene->update(FIXED_TIMESTEP);
 
             // Update effects every frame.
-            // Update effects overlay every frame
             Vector2 effectTarget = ORIGIN;
             gEffects->update(FIXED_TIMESTEP, &effectTarget);
 
