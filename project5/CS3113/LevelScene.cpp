@@ -15,6 +15,43 @@ constexpr int   LVL_W = 24;
 constexpr int   LVL_H = 18;
 constexpr float TILE  = 96.0f;
 
+static Vector2 snapToWalkableTile(Vector2 worldPos, const unsigned int *levelData, Vector2 origin)
+{
+    float left = origin.x - (LVL_W * TILE) / 2.0f;
+    float top  = origin.y - (LVL_H * TILE) / 2.0f;
+
+    int col = (int)floor((worldPos.x - left) / TILE);
+    int row = (int)floor((worldPos.y - top) / TILE);
+
+    if (col < 0) col = 0; else if (col >= LVL_W) col = LVL_W - 1;
+    if (row < 0) row = 0; else if (row >= LVL_H) row = LVL_H - 1;
+
+    // If already walkable, keep it.
+    if (levelData[row * LVL_W + col] == 0)
+        return worldPos;
+
+    // Spiral-style search for nearest walkable tile center.
+    for (int radius = 1; radius < 8; radius++)
+    {
+        for (int dy = -radius; dy <= radius; dy++)
+        {
+            for (int dx = -radius; dx <= radius; dx++)
+            {
+                int c = col + dx, r = row + dy;
+                if (c < 0 || c >= LVL_W || r < 0 || r >= LVL_H) continue;
+                if (levelData[r * LVL_W + c] != 0) continue;
+
+                return {
+                    left + c * TILE + TILE * 0.5f,
+                    top + r * TILE + TILE * 0.5f
+                };
+            }
+        }
+    }
+
+    return worldPos;
+}
+
 // Ninja Adventure style anim: row0=down, row1=left, row2=right, row3=up
 static std::map<Direction, std::vector<int>> makeAnim4x4()
 {
@@ -197,7 +234,7 @@ void LevelScene::setupLevel1()
 void LevelScene::setupLevel2()
 {
     Vector2 o = {(LVL_W*TILE)/2, (LVL_H*TILE)/2};
-    mElevatorPosition = {o.x + 8*TILE, o.y - 6*TILE};
+    mElevatorPosition = {o.x + 7*TILE, o.y - 6*TILE};
 
     initEnemy(mEnemies[0], {o.x-200, o.y}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 110, 5, 10, TILE);
     initEnemy(mEnemies[1], {o.x+200, o.y}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 110, 5, 10, TILE);
@@ -208,7 +245,13 @@ void LevelScene::setupLevel2()
     initEnemy(mEnemies[4], {o.x, o.y+50}, "assets/consultant.png", "Consultant", DISRUPTOR, IDLE, 130, 7, 12, TILE);
     mEnemyCount = 5;
 
+    for (int i = 0; i < mEnemyCount; i++)
+        mEnemies[i].setPosition(snapToWalkableTile(mEnemies[i].getPosition(), mLevelData, o));
+
+    mElevatorPosition = snapToWalkableTile(mElevatorPosition, mLevelData, o);
+
     mPickups[0] = Entity({o.x-300, o.y-200}, {TILE*0.6f,TILE*0.6f}, "assets/pickup.png", PICKUP);
+    mPickups[0].setPosition(snapToWalkableTile(mPickups[0].getPosition(), mLevelData, o));
     mPickups[0].setColliderDimensions({TILE*0.4f, TILE*0.4f});
     mPickupCount = 1;
 }
@@ -219,17 +262,23 @@ void LevelScene::setupLevel3()
     // CEO office is inside the walled room
     mElevatorPosition = {o.x, o.y - TILE};
 
-    initEnemy(mEnemies[0], {o.x-300, o.y-200}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 120, 6, 12, TILE);
-    initEnemy(mEnemies[1], {o.x+300, o.y-200}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 120, 6, 12, TILE);
-    initEnemy(mEnemies[2], {o.x-300, o.y+200}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 120, 6, 12, TILE);
-    initEnemy(mEnemies[3], {o.x+300, o.y+200}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 120, 6, 12, TILE);
-    initEnemy(mEnemies[4], {o.x-150, o.y}, "assets/consultant.png", "Consultant", DISRUPTOR, IDLE, 140, 8, 15, TILE);
-    initEnemy(mEnemies[5], {o.x+150, o.y}, "assets/consultant.png", "Consultant", DISRUPTOR, IDLE, 140, 8, 15, TILE);
+    initEnemy(mEnemies[0], {o.x-350, o.y-340}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 120, 6, 12, TILE);
+    initEnemy(mEnemies[1], {o.x+350, o.y-340}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 120, 6, 12, TILE);
+    initEnemy(mEnemies[2], {o.x-350, o.y+340}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 120, 6, 12, TILE);
+    initEnemy(mEnemies[3], {o.x+350, o.y+340}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 120, 6, 12, TILE);
+    initEnemy(mEnemies[4], {o.x-220, o.y-120}, "assets/consultant.png", "Consultant", DISRUPTOR, IDLE, 140, 8, 15, TILE);
+    initEnemy(mEnemies[5], {o.x+220, o.y+120}, "assets/consultant.png", "Consultant", DISRUPTOR, IDLE, 140, 8, 15, TILE);
     // Boss inside the room
     initEnemy(mEnemies[6], {o.x, o.y-TILE}, "assets/boss.png", "CEO", FOLLOWER, IDLE, 50, 20, 25, TILE);
     mEnemyCount = 7;
 
+    for (int i = 0; i < mEnemyCount; i++)
+        mEnemies[i].setPosition(snapToWalkableTile(mEnemies[i].getPosition(), mLevelData, o));
+
+    mElevatorPosition = snapToWalkableTile(mElevatorPosition, mLevelData, o);
+
     mPickups[0] = Entity({o.x, o.y+300}, {TILE*0.6f,TILE*0.6f}, "assets/pickup.png", PICKUP);
+    mPickups[0].setPosition(snapToWalkableTile(mPickups[0].getPosition(), mLevelData, o));
     mPickups[0].setColliderDimensions({TILE*0.4f, TILE*0.4f});
     mPickupCount = 1;
 }
