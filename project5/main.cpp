@@ -196,17 +196,17 @@ void initialise()
     InitAudioDevice();
 
     // Load music (looping background tracks per level)
-    gBgMusic[0] = LoadMusicStream("assets/audio/level1_bg.ogg");
-    gBgMusic[1] = LoadMusicStream("assets/audio/level2_bg.ogg");
-    gBgMusic[2] = LoadMusicStream("assets/audio/level3_bg.ogg");
+    gBgMusic[0] = LoadMusicStream("assets/level1_bg.mp3");
+    gBgMusic[1] = LoadMusicStream("assets/level2_bg.mp3");
+    gBgMusic[2] = LoadMusicStream("assets/level3_bg.mp3");
     for (int i = 0; i < 3; i++) {
         if (gBgMusic[i].frameCount > 0)
             gBgMusic[i].looping = true;
     }
 
     // Load one-shot sound effects
-    gAttackSfx = LoadSound("assets/audio/attack.wav");
-    gHitSfx    = LoadSound("assets/audio/hit.wav");
+    gAttackSfx = LoadSound("assets/attack.mp3");
+    gHitSfx    = LoadSound("assets/hit.mp3");
 
     // Load shader (professor's pattern)
     gShader.load("shaders/vertex.glsl", "shaders/fragment.glsl");
