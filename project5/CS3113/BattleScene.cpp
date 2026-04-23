@@ -2,11 +2,11 @@
 
 static const Ability ABILITY_DEFS[] = {
     { ABILITY_PINK_SLIP,    "Pink Slip",    "Fire projectile (1 dmg)", -1, -1, 1 },
-    { ABILITY_REPLY_ALL,    "Reply All",    "Heavy hit (3 dmg)",       -1, -1, 1 },
+    { ABILITY_REPLY_ALL,    "Reply All",    "Heavy hit (3 dmg)",       -1, -1, 2 },
     { ABILITY_COFFEE_BREAK, "Coffee Break", "Heal 30 HP",              -1, -1, 1 },
     { ABILITY_REFACTOR,     "Refactor",     "Swap top two abilities",  -1, -1, 1 },
     { ABILITY_CRUNCH_TIME,  "Crunch Time",  "2x dmg next, lose 15 HP", -1, -1, 1 },
-    { ABILITY_PTO_REQUEST,  "PTO Request",  "Block next enemy attack", -1, -1, 1 },
+    { ABILITY_PTO_REQUEST,  "PTO Request",  "Block next enemy attack", -1, -1, 2 },
 };
 
 Ability makeAbility(AbilityType t)
@@ -69,9 +69,9 @@ void BattleScene::getStack(Ability *out, int *outSize) const
     for (int i = 0; i < mStackSize; i++) out[i] = mStack[i];
 }
 
-// ============================================================
+
 //  Input
-// ============================================================
+
 void BattleScene::processInput()
 {
     if (mTurn == PLAYER_CHOOSING && mStackSize > 0)
@@ -118,9 +118,9 @@ bool BattleScene::hasUsableAbility() const
     return false;
 }
 
-// ============================================================
+
 //  Execute ability
-// ============================================================
+
 void BattleScene::executeAbility(int index)
 {
     if (index >= mStackSize) return;
@@ -221,9 +221,9 @@ void BattleScene::executeAbility(int index)
     }
 }
 
-// ============================================================
+
 //  Enemy attack
-// ============================================================
+
 void BattleScene::enemyAttack()
 {
     if (mInvincibleNextTurn) {
@@ -249,9 +249,9 @@ void BattleScene::enemyAttack()
     }
 }
 
-// ============================================================
+
 //  Update
-// ============================================================
+
 void BattleScene::update(float deltaTime)
 {
     if (mShakeTimer > 0) mShakeTimer -= deltaTime;
@@ -263,9 +263,9 @@ void BattleScene::update(float deltaTime)
     }
 }
 
-// ============================================================
+
 //  Render
-// ============================================================
+
 void BattleScene::renderHP(int x, int y, int w, int hp, int maxHP, Color col)
 {
     DrawRectangle(x, y, w + 4, 18, DARKGRAY);
@@ -334,7 +334,7 @@ void BattleScene::render()
     int menuW = sw/2 - 30;
 
     DrawRectangle(menuX, menuY, menuW, sh - menuY - 20, (Color){40, 40, 55, 255});
-    DrawText("CALL STACK", menuX + 10, menuY + 6, 16, YELLOW);
+    DrawText("CALL STACK", menuX + 15, menuY + 10, 20, YELLOW);
 
     int slotH = 36;
     int startY = menuY + 30;

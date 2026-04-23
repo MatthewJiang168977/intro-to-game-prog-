@@ -1,9 +1,9 @@
 #include "LevelScene.h"
 
-// ============================================================
+
 //  Tile constants — tileset is 256x128 = 8 cols x 4 rows of 32px
 //  0 = walkable empty, 1+ = tile index (all non-zero are solid)
-// ============================================================
+
 constexpr unsigned int W  = 25; // grey wall (tile index 25)
 constexpr unsigned int P  = 1;  // partition
 constexpr unsigned int D  = 4;  // desk with PC (obstacle)
@@ -52,7 +52,7 @@ static Vector2 snapToWalkableTile(Vector2 worldPos, const unsigned int *levelDat
     return worldPos;
 }
 
-// Ninja Adventure style anim: row0=down, row1=left, row2=right, row3=up
+
 static std::map<Direction, std::vector<int>> makeAnim4x4()
 {
     return {
@@ -60,23 +60,23 @@ static std::map<Direction, std::vector<int>> makeAnim4x4()
     };
 }
 
-// ============================================================
+
 //  Level 1 — Cubicle Farm (24x18)
-// ============================================================
+
 static unsigned int sLevel1[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
+    W, 0, 0, 0, PR, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, PR, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
-    W, 0, 0, 0, 0, D, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, D, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, P, P, P, 0, 0, 0, 0, 0, 0, 0, 0, P, P, P, 0, 0, 0, 0, 0, W,
-    W, 0, 0, 0, P, 0, 0, 0, 0, 0,PL, 0, 0, 0, 0, 0, 0, P, 0, 0, 0, 0, 0, W,
+    W, 0, 0, 0, C, D, C, 0, 0, PL, 0, 0, 0, PL, 0, C, D, C, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
-    W, 0, D, 0, 0, C, 0, 0, 0, 0, 0, 0, 0, C, 0, 0, 0, 0, 0, 0, D, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
-    W, 0, 0, 0, P, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, P, 0, 0, 0, 0, 0, W,
-    W, 0, 0, 0, P, P, P, 0, 0,PL, 0, 0, 0,PL, 0, P, P, P, 0, 0, 0, 0, 0, W,
+    W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
+    W, 0, 0, 0, P, P, P, 0, 0, 0, 0, 0, 0, 0, 0, P, P, P, 0, 0, 0, 0, 0, W,
+    W, 0, 0, 0, C, D, C, 0, 0,PL, 0, 0, 0,PL, 0, C, D, C, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, D, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, D, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
@@ -84,9 +84,9 @@ static unsigned int sLevel1[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
 };
 
-// ============================================================
+
 //  Level 2 — Server Room (tighter corridors)
-// ============================================================
+
 static unsigned int sLevel2[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
     W, 0, 0, 0, W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W, 0, 0, 0, W,
@@ -108,9 +108,9 @@ static unsigned int sLevel2[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
 };
 
-// ============================================================
-//  Level 3 — Executive Suite (boss arena)
-// ============================================================
+
+//  Level 3 
+
 static unsigned int sLevel3[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
@@ -132,9 +132,9 @@ static unsigned int sLevel3[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
 };
 
-// ============================================================
+
 //  Helper: init enemy
-// ============================================================
+
 static void initEnemy(Entity &e, Vector2 pos, const char *tex, const std::string &name,
     AIType ai, AIState state, int speed, int hp, float dmg, float tile)
 {
@@ -155,7 +155,7 @@ static const char* getTextureFromEnemyName(const std::string &name)
     return "assets/intern.png";
 }
 
-// ============================================================
+
 LevelScene::LevelScene(SceneType t) : mLevelType(t) {}
 LevelScene::~LevelScene() { shutdown(); }
 
@@ -250,7 +250,7 @@ void LevelScene::setupLevel2()
 
     mElevatorPosition = snapToWalkableTile(mElevatorPosition, mLevelData, o);
 
-    mPickups[0] = Entity({o.x-300, o.y-200}, {TILE*0.6f,TILE*0.6f}, "assets/pickup.png", PICKUP);
+    mPickups[0] = Entity({o.x-350, o.y-250}, {TILE*0.6f,TILE*0.6f}, "assets/pickup.png", PICKUP);
     mPickups[0].setPosition(snapToWalkableTile(mPickups[0].getPosition(), mLevelData, o));
     mPickups[0].setColliderDimensions({TILE*0.4f, TILE*0.4f});
     mPickupCount = 1;
@@ -283,9 +283,9 @@ void LevelScene::setupLevel3()
     mPickupCount = 1;
 }
 
-// ============================================================
+
 //  Stack operations
-// ============================================================
+
 void LevelScene::pushAbility(AbilityType type)
 {
     if (mStackSize >= MAX_STACK) return;
@@ -326,9 +326,9 @@ void LevelScene::removeEnemy(int index)
     if (index >= 0 && index < mEnemyCount) mEnemies[index].deactivate();
 }
 
-// ============================================================
+
 //  Encounter — touch enemy to battle
-// ============================================================
+
 void LevelScene::checkEnemyEncounters()
 {
     for (int i = 0; i < mEnemyCount; i++)
@@ -436,9 +436,9 @@ int LevelScene::countActiveEnemies()
     return c;
 }
 
-// ============================================================
+
 //  Input / Update
-// ============================================================
+
 void LevelScene::processInput()
 {
     mPlayer->resetMovement();
@@ -464,9 +464,9 @@ void LevelScene::update(float deltaTime)
     mCamera.target = mPlayer->getPosition();
 }
 
-// ============================================================
+
 //  Render
-// ============================================================
+
 void LevelScene::render()
 {
     // Apply burnout shader if loaded
