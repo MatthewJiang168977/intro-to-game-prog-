@@ -26,11 +26,11 @@ static Vector2 snapToWalkableTile(Vector2 worldPos, const unsigned int *levelDat
     if (col < 0) col = 0; else if (col >= LVL_W) col = LVL_W - 1;
     if (row < 0) row = 0; else if (row >= LVL_H) row = LVL_H - 1;
 
-    // If already walkable, keep it.
+    // Keep valid positions unchanged.
     if (levelData[row * LVL_W + col] == 0)
         return worldPos;
 
-    // Spiral-style search for nearest walkable tile center.
+    // Find a nearby walkable tile center.
     for (int radius = 1; radius < 8; radius++)
     {
         for (int dy = -radius; dy <= radius; dy++)
@@ -203,6 +203,7 @@ void LevelScene::initialise()
     mCamera = {0};
     mCamera.target = mPlayer->getPosition();
     mCamera.offset = {(float)GetScreenWidth()/2, (float)GetScreenHeight()/2};
+    // Exploration camera zoom.
     mCamera.zoom = 2.0f;
 
     switch (mLevelType) {
@@ -513,17 +514,6 @@ void LevelScene::renderHUD()
     char ebuf[32]; snprintf(ebuf, 32, "Enemies: %d", countActiveEnemies());
     DrawText(ebuf, 20, 78, 16, LIGHTGRAY);
 
-    // Pickup hint
-    for (int i = 0; i < mPickupCount; i++) {
-        if (!mPickups[i].isActive()) continue;
-        if (Vector2Distance(mPlayer->getPosition(), mPickups[i].getPosition()) < TILE*2.5f) {
-            int tx = GetScreenWidth()/2 - 120;
-            int ty = GetScreenHeight() - 48;
-            DrawRectangle(tx - 12, ty - 6, 250, 30, (Color){0, 0, 0, 170});
-            DrawText("[E] Pick up ability", tx, ty, 20, YELLOW);
-            break;
-        }
-    }
     if (Vector2Distance(mPlayer->getPosition(), mElevatorPosition) < TILE*2) {
         const char *h = (mLevelType==LEVEL_3) ? ">> Confront the CEO >>" : ">> Walk to ELEVATOR >>";
         DrawText(h, GetScreenWidth()/2 - MeasureText(h,16)/2, GetScreenHeight()-60, 16, YELLOW);
@@ -560,4 +550,18 @@ void LevelScene::shutdown()
 float LevelScene::getPlayerHPRatio() const
 {
     return mPlayer ? mPlayer->getHPRatio() : 1.0f;
+}
+
+bool LevelScene::shouldShowPickupPrompt() const
+{
+    if (!mPlayer) return false;
+
+    for (int i = 0; i < mPickupCount; i++)
+    {
+        if (!mPickups[i].isActive()) continue;
+        if (Vector2Distance(mPlayer->getPosition(), mPickups[i].getPosition()) < TILE * 2.5f)
+            return true;
+    }
+
+    return false;
 }
