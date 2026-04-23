@@ -166,7 +166,8 @@ void LevelScene::initialise()
     mCamera = {0};
     mCamera.target = mPlayer->getPosition();
     mCamera.offset = {(float)GetScreenWidth()/2, (float)GetScreenHeight()/2};
-    mCamera.zoom = 1.0f;
+    // Zoom in for a tighter top-down feel.
+    mCamera.zoom = 2.0f;
 
     switch (mLevelType) {
         case LEVEL_1: setupLevel1(); break;
@@ -467,8 +468,11 @@ void LevelScene::renderHUD()
     // Pickup hint
     for (int i = 0; i < mPickupCount; i++) {
         if (!mPickups[i].isActive()) continue;
-        if (Vector2Distance(mPlayer->getPosition(), mPickups[i].getPosition()) < TILE*1.5f) {
-            DrawText("[E] Pick up ability", GetScreenWidth()/2-80, GetScreenHeight()-40, 18, YELLOW);
+        if (Vector2Distance(mPlayer->getPosition(), mPickups[i].getPosition()) < TILE*2.5f) {
+            int tx = GetScreenWidth()/2 - 120;
+            int ty = GetScreenHeight() - 48;
+            DrawRectangle(tx - 12, ty - 6, 250, 30, (Color){0, 0, 0, 170});
+            DrawText("[E] Pick up ability", tx, ty, 20, YELLOW);
             break;
         }
     }

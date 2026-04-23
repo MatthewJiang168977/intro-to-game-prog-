@@ -98,7 +98,10 @@ void switchToScene(SceneType type)
     }
     case BATTLE_SCENE:
     {
-        // Fade out effect before battle
+        // Ensure exploration fade overlay does not persist into battle.
+        gEffects->setCurrentEffect(NONE);
+        gEffects->setAlpha(Effects::TRANSPARENT);
+
         auto *b = new BattleScene();
         b->setReturnScene(gLevelType);
 
@@ -226,13 +229,10 @@ void update()
         {
             gCurrentScene->update(FIXED_TIMESTEP);
 
-            // Update effects overlay position
-            if (gLevelScene && (gCurrentType >= LEVEL_1 && gCurrentType <= LEVEL_3)) {
-                // Camera is managed inside LevelScene::render via BeginMode2D
-                // We just update effects here
-                Vector2 effectTarget = ORIGIN;
-                gEffects->update(FIXED_TIMESTEP, &effectTarget);
-            }
+            // Update effects overlay every frame so transitions don't "stick"
+            // when changing to non-level scenes (e.g., battle/menu).
+            Vector2 effectTarget = ORIGIN;
+            gEffects->update(FIXED_TIMESTEP, &effectTarget);
 
             // Check battle trigger
             if (gCurrentType >= LEVEL_1 && gCurrentType <= LEVEL_3 && gLevelScene) {
