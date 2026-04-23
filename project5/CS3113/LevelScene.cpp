@@ -72,7 +72,7 @@ static unsigned int sLevel1[LVL_H * LVL_W] = {
     W, 0, 0, 0, P, 0, 0, 0, 0, 0,PL, 0, 0, 0, 0, 0, 0, P, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
-    W, 0, D, 0, 0, 0, 0, 0, 0, C, 0, 0, 0, C, 0, 0, 0, 0, 0, 0, D, 0, 0, W,
+    W, 0, D, 0, 0, C, 0, 0, 0, 0, 0, 0, 0, C, 0, 0, 0, 0, 0, 0, D, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, P, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, P, 0, 0, 0, 0, 0, W,
@@ -80,7 +80,7 @@ static unsigned int sLevel1[LVL_H * LVL_W] = {
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, D, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, D, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
-    W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
+    W, 0, 0, 0, PR, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, PR, 0, 0, 0, 0, 0, W,
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
 };
 
@@ -103,7 +103,7 @@ static unsigned int sLevel2[LVL_H * LVL_W] = {
     W, W, W, 0, 0, 0, 0, 0, 0, 0, W, W, W, W, 0, 0, 0, 0, 0, 0, 0, W, W, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, W, 0, 0, C, C, 0, 0, 0, 0, 0, 0, C, C, 0, 0, W, 0, 0, 0, W,
-    W, 0, 0, 0, W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W, 0, 0, 0, W,
+    W, PR, 0, 0, W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W, 0, 0, PR, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
 };
@@ -116,16 +116,16 @@ static unsigned int sLevel3[LVL_H * LVL_W] = {
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0,PL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,PL, 0, 0, W,
-    W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
-    W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
-    W, 0, 0, 0, 0, 0, 0, 0, W, W, W, W, W, W, W, W, 0, 0, 0, 0, 0, 0, 0, W,
+    W, 0, 0, 0, 0, 0, W, W, W, W, W, 0, 0, W, W, W, W, W, 0, 0, 0, 0, 0, W,
+    W, 0, 0, 0, 0, 0, W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W, 0, 0, 0, 0, 0, W,
+    W, 0, 0, 0, 0, 0, 0, 0, 0, W, W, W, W, W, W, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, W, 0, 0, 0, 0, 0, 0, W, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, W, 0, 0, 0, 0, 0, 0, W, 0, 0, 0, 0, 0, 0, 0, W,
+    W, 0, 0, 0, 0, 0, C, 0, W, 0, 0, 0, 0, 0, 0, W, 0, C, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, W, 0, 0, 0, 0, 0, 0, W, 0, 0, 0, 0, 0, 0, 0, W,
-    W, 0, 0, 0, 0, 0, 0, 0, W, 0, 0, 0, 0, 0, 0, W, 0, 0, 0, 0, 0, 0, 0, W,
-    W, 0, 0, 0, 0, 0, 0, 0, W, W, W, 0, 0, W, W, W, 0, 0, 0, 0, 0, 0, 0, W,
-    W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
-    W, 0, 0,PL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,PL, 0, 0, W,
+    W, 0, 0, 0, 0, 0, 0, 0, 0, W, 0, 0, 0, 0, W, 0, 0, 0, 0, 0, 0, 0, 0, W,
+    W, 0, 0, 0, 0, 0, W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W, 0, 0, 0, 0, 0, W,
+    W, 0, 0,PL, 0, 0, W, W, W, W, W, 0, 0, W, W, W, W, W, 0, 0,PL, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
@@ -183,10 +183,10 @@ void LevelScene::initialise()
     auto anim = makeAnim4x4();
     float psz = TILE * 0.9f;
     mPlayer = new Entity(
-        {origin.x - 300, origin.y + 250}, {psz, psz},
+        {origin.x - 500, origin.y + 500 }, {psz, psz},
         "assets/player.png", ATLAS, {4,4}, anim, PLAYER
     );
-    mPlayer->setSpeed(200); mPlayer->setHP(mPlayerStartHP);
+    mPlayer->setSpeed(150); mPlayer->setHP(mPlayerStartHP);
     mPlayer->setColliderDimensions({psz*0.45f, psz*0.45f});
     mPlayer->setAcceleration({0,0});
     // Hack: restore maxHP separately if needed
@@ -203,7 +203,6 @@ void LevelScene::initialise()
     mCamera = {0};
     mCamera.target = mPlayer->getPosition();
     mCamera.offset = {(float)GetScreenWidth()/2, (float)GetScreenHeight()/2};
-    // Zoom in for a tighter top-down feel.
     mCamera.zoom = 2.0f;
 
     switch (mLevelType) {
@@ -234,7 +233,7 @@ void LevelScene::setupLevel1()
 void LevelScene::setupLevel2()
 {
     Vector2 o = {(LVL_W*TILE)/2, (LVL_H*TILE)/2};
-    mElevatorPosition = {o.x + 7*TILE, o.y - 6*TILE};
+    mElevatorPosition = {o.x + 9.5*TILE, o.y - 7*TILE};
 
     initEnemy(mEnemies[0], {o.x-200, o.y}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 110, 5, 10, TILE);
     initEnemy(mEnemies[1], {o.x+200, o.y}, "assets/intern.png", "Intern", FOLLOWER, IDLE, 110, 5, 10, TILE);

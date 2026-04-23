@@ -229,8 +229,7 @@ void update()
         {
             gCurrentScene->update(FIXED_TIMESTEP);
 
-            // Update effects overlay every frame so transitions don't "stick"
-            // when changing to non-level scenes (e.g., battle/menu).
+            // Update effects overlay every frame
             Vector2 effectTarget = ORIGIN;
             gEffects->update(FIXED_TIMESTEP, &effectTarget);
 
@@ -308,7 +307,7 @@ void render()
 
         if (useShader) gShader.end();
 
-        // Render effects overlay (fade in/out) — screen space
+        // Render effects overlay (fade in/out)
         gEffects->render();
     }
     else
