@@ -36,6 +36,12 @@ SceneType    gLevelType    = LEVEL_1;
 ShaderProgram gShader;
 Effects      *gEffects = nullptr;
 
+// Audio
+Music gBgMusic[3]  = {0};   // index 0=L1, 1=L2, 2=L3
+Sound gAttackSfx   = {0};
+Sound gHitSfx      = {0};
+int   gCurrentMusicIdx = -1;
+
 // Persistent player state
 int     gPlayerHP = 100, gPlayerMaxHP = 100;
 Ability gStack[MAX_STACK];
@@ -45,6 +51,18 @@ float   gEndScreenTimer = 0;
 //  Scene switching
 void switchToScene(SceneType type);
 void returnFromBattle();
+
+// Stop current music and start a new track (pass -1 to just stop)
+void playLevelMusic(int idx)
+{
+    if (gCurrentMusicIdx >= 0 && gCurrentMusicIdx < 3)
+        StopMusicStream(gBgMusic[gCurrentMusicIdx]);
+    gCurrentMusicIdx = idx;
+    if (idx >= 0 && idx < 3 && gBgMusic[idx].frameCount > 0) {
+        PlayMusicStream(gBgMusic[idx]);
+        SetMusicVolume(gBgMusic[idx], 0.5f);
+    }
+}
 
 void switchToScene(SceneType type)
 {
@@ -73,6 +91,7 @@ void switchToScene(SceneType type)
     case MENU_SCENE:
     {
         gPlayerHP = 100; gPlayerMaxHP = 100; gStackSize = 0;
+        playLevelMusic(-1);
         auto *m = new MenuScene();
         m->initialise();
         gCurrentScene = m;
@@ -87,6 +106,10 @@ void switchToScene(SceneType type)
         gLevelScene->initialise();
         gCurrentScene = gLevelScene;
 
+        // Start level-appropriate music
+        int musicIdx = (int)(type - LEVEL_1); // 0, 1, or 2
+        playLevelMusic(musicIdx);
+
         // Fade in when entering a new level
         gEffects->start(FADEIN);
         break;
@@ -99,6 +122,7 @@ void switchToScene(SceneType type)
 
         auto *b = new BattleScene();
         b->setReturnScene(gLevelType);
+        b->setSounds(gAttackSfx, gHitSfx);
 
         Ability stack[MAX_STACK]; int ss;
         gLevelScene->getStack(stack, &ss);
@@ -125,6 +149,7 @@ void switchToScene(SceneType type)
         gEffects->setCurrentEffect(NONE);
         gEffects->setAlpha(Effects::TRANSPARENT);
         gCurrentScene = nullptr;
+        playLevelMusic(-1);
         if (gLevelScene) { gLevelScene->shutdown(); delete gLevelScene; gLevelScene = nullptr; }
         break;
     }
@@ -170,6 +195,19 @@ void initialise()
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "STACKOVERFLOW");
     InitAudioDevice();
 
+    // Load music (looping background tracks per level)
+    gBgMusic[0] = LoadMusicStream("assets/audio/level1_bg.ogg");
+    gBgMusic[1] = LoadMusicStream("assets/audio/level2_bg.ogg");
+    gBgMusic[2] = LoadMusicStream("assets/audio/level3_bg.ogg");
+    for (int i = 0; i < 3; i++) {
+        if (gBgMusic[i].frameCount > 0)
+            gBgMusic[i].looping = true;
+    }
+
+    // Load one-shot sound effects
+    gAttackSfx = LoadSound("assets/audio/attack.wav");
+    gHitSfx    = LoadSound("assets/audio/hit.wav");
+
     // Load shader (professor's pattern)
     gShader.load("shaders/vertex.glsl", "shaders/fragment.glsl");
 
@@ -203,6 +241,10 @@ void update()
     float ticks = (float)GetTime();
     float deltaTime = ticks - gPreviousTicks;
     gPreviousTicks = ticks;
+
+    // Keep the active music stream buffered
+    if (gCurrentMusicIdx >= 0 && gCurrentMusicIdx < 3)
+        UpdateMusicStream(gBgMusic[gCurrentMusicIdx]);
 
     deltaTime += gTimeAccumulator;
 
@@ -332,6 +374,12 @@ void shutdown()
     gEffects = nullptr;
 
     gShader.unload();
+
+    // Unload audio
+    for (int i = 0; i < 3; i++)
+        if (gBgMusic[i].frameCount > 0) UnloadMusicStream(gBgMusic[i]);
+    if (gAttackSfx.frameCount > 0) UnloadSound(gAttackSfx);
+    if (gHitSfx.frameCount > 0)    UnloadSound(gHitSfx);
 
     CloseAudioDevice();
     CloseWindow();

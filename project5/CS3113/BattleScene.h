@@ -2,6 +2,7 @@
 #define BATTLE_SCENE_H
 
 #include "Scene.h"
+#include "raylib.h"
 #include <string>
 
 // Ability types
@@ -42,6 +43,9 @@ public:
     void update(float deltaTime) override;
     void render() override;
     void shutdown() override;
+
+    // Audio injection from main (sounds are owned/unloaded by main)
+    void setSounds(Sound attackSfx, Sound hitSfx) { mAttackSfx = attackSfx; mHitSfx = hitSfx; }
 
     // Set up before battle starts
     void setPlayerData(int hp, int maxHP, Ability *stack, int stackSize, 
@@ -92,6 +96,10 @@ private:
     bool  mInvincibleNextTurn; // PTO request
 
     std::string mBattleLog; // text shown at bottom
+
+    // Sound effects (injected from main, not owned here)
+    Sound mAttackSfx = {0};
+    Sound mHitSfx    = {0};
 
     // Helpers
     void executeAbility(int index);

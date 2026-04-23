@@ -138,6 +138,7 @@ void BattleScene::executeAbility(int index)
             int dmg = (int)(1 * mDamageMultiplier);
             mEnemyHP -= dmg;
             mShakeTimer = 0.2f; mShakeAmount = 8;
+            if (mAttackSfx.frameCount > 0) PlaySound(mAttackSfx);
             mBattleLog = "You fired a Pink Slip! " + std::to_string(dmg) + " damage!";
             break;
         }
@@ -146,6 +147,7 @@ void BattleScene::executeAbility(int index)
             int dmg = (int)(3 * mDamageMultiplier);
             mEnemyHP -= dmg;
             mShakeTimer = 0.3f; mShakeAmount = 12;
+            if (mAttackSfx.frameCount > 0) PlaySound(mAttackSfx);
             mBattleLog = "Reply All sent! " + std::to_string(dmg) + " damage to everyone!";
             break;
         }
@@ -229,6 +231,7 @@ void BattleScene::enemyAttack()
         mPlayerHP -= dmg;
         mShakeTimer = 0.2f; mShakeAmount = 6;
         mHitFlashTimer = 0.18f;
+        if (mHitSfx.frameCount > 0) PlaySound(mHitSfx);
         mBattleLog = mEnemyName + " attacks! " + std::to_string(dmg) + " damage!";
     }
 
