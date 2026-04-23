@@ -98,7 +98,7 @@ void switchToScene(SceneType type)
     }
     case BATTLE_SCENE:
     {
-        // Ensure exploration fade overlay does not persist into battle.
+        // Clear level fade before battle.
         gEffects->setCurrentEffect(NONE);
         gEffects->setAlpha(Effects::TRANSPARENT);
 
@@ -229,8 +229,7 @@ void update()
         {
             gCurrentScene->update(FIXED_TIMESTEP);
 
-            // Update effects overlay every frame so transitions don't "stick"
-            // when changing to non-level scenes (e.g., battle/menu).
+            // Update effects every frame.
             Vector2 effectTarget = ORIGIN;
             gEffects->update(FIXED_TIMESTEP, &effectTarget);
 
@@ -307,6 +306,15 @@ void render()
         gCurrentScene->render();
 
         if (useShader) gShader.end();
+
+        // Draw key prompt after shader pass.
+        if (gCurrentType >= LEVEL_1 && gCurrentType <= LEVEL_3
+            && gLevelScene && gLevelScene->shouldShowPickupPrompt()) {
+            int tx = GetScreenWidth()/2 - 120;
+            int ty = GetScreenHeight() - 48;
+            DrawRectangle(tx - 12, ty - 6, 250, 30, (Color){0, 0, 0, 200});
+            DrawText("[E] Pick up ability", tx, ty, 20, YELLOW);
+        }
 
         // Render effects overlay (fade in/out) — screen space
         gEffects->render();
