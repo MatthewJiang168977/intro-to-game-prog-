@@ -1,9 +1,7 @@
 #include "LevelScene.h"
 
-// ============================================================
 //  Tile constants — tileset is 256x128 = 8 cols x 4 rows of 32px
 //  0 = walkable empty, 1+ = tile index (all non-zero are solid)
-// ============================================================
 constexpr unsigned int W  = 25; // grey wall (tile index 25)
 constexpr unsigned int P  = 1;  // partition
 constexpr unsigned int D  = 4;  // desk with PC (obstacle)
@@ -60,9 +58,7 @@ static std::map<Direction, std::vector<int>> makeAnim4x4()
     };
 }
 
-// ============================================================
 //  Level 1 — Cubicle Farm (24x18)
-// ============================================================
 static unsigned int sLevel1[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
@@ -84,9 +80,7 @@ static unsigned int sLevel1[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
 };
 
-// ============================================================
 //  Level 2 — Server Room (tighter corridors)
-// ============================================================
 static unsigned int sLevel2[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
     W, 0, 0, 0, W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W, 0, 0, 0, W,
@@ -108,9 +102,7 @@ static unsigned int sLevel2[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
 };
 
-// ============================================================
 //  Level 3 — Executive Suite (boss arena)
-// ============================================================
 static unsigned int sLevel3[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
     W, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, W,
@@ -132,9 +124,7 @@ static unsigned int sLevel3[LVL_H * LVL_W] = {
     W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
 };
 
-// ============================================================
 //  Helper: init enemy
-// ============================================================
 static void initEnemy(Entity &e, Vector2 pos, const char *tex, const std::string &name,
     AIType ai, AIState state, int speed, int hp, float dmg, float tile)
 {
@@ -155,7 +145,6 @@ static const char* getTextureFromEnemyName(const std::string &name)
     return "assets/intern.png";
 }
 
-// ============================================================
 LevelScene::LevelScene(SceneType t) : mLevelType(t) {}
 LevelScene::~LevelScene() { shutdown(); }
 
@@ -283,9 +272,7 @@ void LevelScene::setupLevel3()
     mPickupCount = 1;
 }
 
-// ============================================================
 //  Stack operations
-// ============================================================
 void LevelScene::pushAbility(AbilityType type)
 {
     if (mStackSize >= MAX_STACK) return;
@@ -326,9 +313,7 @@ void LevelScene::removeEnemy(int index)
     if (index >= 0 && index < mEnemyCount) mEnemies[index].deactivate();
 }
 
-// ============================================================
 //  Encounter — touch enemy to battle
-// ============================================================
 void LevelScene::checkEnemyEncounters()
 {
     for (int i = 0; i < mEnemyCount; i++)
@@ -405,12 +390,8 @@ void LevelScene::checkPickupCollisions()
         if (!mPickups[i].isActive()) continue;
         float dist = Vector2Distance(mPlayer->getPosition(), mPickups[i].getPosition());
         if (dist < TILE && IsKeyPressed(KEY_E)) {
-            switch (mLevelType) {
-                case LEVEL_1: pushAbility(ABILITY_REPLY_ALL); break;
-                case LEVEL_2: pushAbility(ABILITY_CRUNCH_TIME); break;
-                case LEVEL_3: pushAbility(ABILITY_PTO_REQUEST); break;
-                default: pushAbility(ABILITY_REPLY_ALL); break;
-            }
+            AbilityType randomAbility = (AbilityType)GetRandomValue(0, 5);
+            pushAbility(randomAbility);
             mPickups[i].deactivate();
         }
     }
@@ -436,9 +417,7 @@ int LevelScene::countActiveEnemies()
     return c;
 }
 
-// ============================================================
 //  Input / Update
-// ============================================================
 void LevelScene::processInput()
 {
     mPlayer->resetMovement();
@@ -464,9 +443,7 @@ void LevelScene::update(float deltaTime)
     mCamera.target = mPlayer->getPosition();
 }
 
-// ============================================================
 //  Render
-// ============================================================
 void LevelScene::render()
 {
     // Apply burnout shader if loaded

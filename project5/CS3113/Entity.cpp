@@ -89,7 +89,6 @@ void Entity::takeDamage(int amount)
     if (mHP <= 0) { mHP = 0; deactivate(); }
 }
 
-// ---- Collision ----
 void Entity::checkCollisionY(Entity *e, int count)
 {
     for (int i = 0; i < count; i++) {
@@ -192,7 +191,6 @@ void Entity::animate(float deltaTime)
     }
 }
 
-// ---- AI ----
 void Entity::AIWander()
 {
     int r = GetRandomValue(0, 100);
@@ -254,7 +252,6 @@ void Entity::AIActivate(Entity *target)
     }
 }
 
-// ---- Update ----
 void Entity::update(float deltaTime, Entity *player, Map *map,
     Entity *collidableEntities, int collisionCheckCount)
 {
@@ -282,7 +279,6 @@ void Entity::update(float deltaTime, Entity *player, Map *map,
     if (mTextureType == ATLAS && GetLength(mMovement) != 0) animate(deltaTime);
 }
 
-// ---- Render ----
 void Entity::render()
 {
     if (mEntityStatus == INACTIVE) return;
